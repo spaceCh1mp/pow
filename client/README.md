@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
 
 ## Available Scripts
@@ -66,3 +67,37 @@ This section has moved here: https://facebook.github.io/create-react-app/docs/de
 ### `npm run build` fails to minify
 
 This section has moved here: https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify
+=======
+# Introduction
+
+    coming soon
+
+## Table of content
+
+--------------------
+
+1. [Structure.](#structure)
+2. [Components.](#components)
+3. [Usage.](#usage)
+4. [Testing.](#testing)
+
+## Structure
+
+    coming soon
+
+## Components
+
+    coming soon
+
+## Usage
+
+    coming soon
+
+## Testing
+
+    coming soon
+
+## Contributors
+
+    coming soon
+>>>>>>> learn-gin

@@ -5,7 +5,7 @@ function App() {
   return (
     <div className="App">
       <header className="App-header">
-        Pow maws... pow
+        <p>Pow.</p>
       </header>
     </div>
   );
