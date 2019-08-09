@@ -4,8 +4,6 @@
 
 ## Table of content
 
---------------------
-
 1. [Structure.](#structure)
 2. [Components.](#components)
 3. [Usage.](#usage)
