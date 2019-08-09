@@ -14,7 +14,7 @@ func main() {
 	router.Use(static.Serve("/", static.LocalFile("./client/build", true)))
 
 	api := router.Group("/api")
-	api.GET("/got", func(g *gin.Context) {
+	api.GET("/", func(g *gin.Context) {
 		g.JSON(http.StatusOK, gin.H{
 			"message": "pong",
 		})
