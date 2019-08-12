@@ -1,6 +1,6 @@
 # Introduction
 
-    This is the view (frontend) for the web app pow, for a better description of the application go [Here](https://github.com/spaceCh1mp/pow). This is built using ReactJs and handles UI/UX functionality.
+    This is the view (frontend) for the web app pow, for a better description of the application visit the main page. This is built using ReactJs and handles UI/UX functionality.
 
 ## Table of content
 
