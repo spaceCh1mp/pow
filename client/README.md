@@ -24,9 +24,10 @@
                     component-name.js
                     component-name.css
                     component-name.test.js
-            helpers/
+            css/
+            pages/
             index.js
-            index.css
+            routes.js
             serviceWorker.js
 
 

@@ -8,17 +8,10 @@ import (
 )
 
 func main() {
-	gin.SetMode(gin.ReleaseMode)
+
 	router := gin.Default()
-
+	//serve react build
 	router.Use(static.Serve("/", static.LocalFile("./client/build", true)))
-
-	api := router.Group("/api")
-	api.GET("/", func(g *gin.Context) {
-		g.JSON(http.StatusOK, gin.H{
-			"message": "pong",
-		})
-	})
 
 	router.Run(":5000")
 }
