@@ -23,6 +23,11 @@ func Router(r *gin.Engine, p *Res) {
 		{"/dashboard"},
 	}
 
+	//TODO
+	//Evaluate if user is logged in
+	//redirect to dashboard with user details if true
+	//redirect to login if false
+
 	for _, er := range ro {
 		r.Use(static.Serve(er.name, static.LocalFile(p.BuildPath, true)))
 	}

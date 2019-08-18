@@ -1,11 +1,32 @@
-import React, {Component} from 'react'
+import React from 'react'
 
-import './nav.css'
+import Link from '@material-ui/core/Link'
+import ListItem from '@material-ui/core/ListItem'
+import ListItemIcon from '@material-ui/core/ListItemIcon'
+import ListItemText from '@material-ui/core/ListItemText'
 
-export default class Navigation extends Component{
-    render(){
-        return(
-            <div>Nav</div>
-        )
-    }
-}
+import DashboardIcon from '@material-ui/icons/Dashboard'
+import AccountCircleIcon from '@material-ui/icons/AccountCircle'
+
+const Nav = (
+  <div>
+    <Link href="/">
+      <ListItem button>
+        <ListItemIcon>
+          <DashboardIcon />
+        </ListItemIcon>
+        <ListItemText primary="Dashboard" />
+      </ListItem>
+    </Link>
+    <Link href="/account">
+      <ListItem button>
+        <ListItemIcon> 
+          <AccountCircleIcon />
+        </ListItemIcon>
+        <ListItemText primary="Account" />
+      </ListItem>
+    </Link>
+  </div>
+);
+
+export default Nav
