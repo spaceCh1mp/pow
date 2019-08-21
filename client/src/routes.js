@@ -7,6 +7,9 @@ import Login from './pages/1-Login'
 import Profile from './pages/3-Profile'
 import Dashboard from './pages/Dashboard/'
 
+//TODO
+//Make dashboard and account protected routes
+
 function Routes(){
     console.log(document.location)
     return (

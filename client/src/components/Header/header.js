@@ -105,7 +105,7 @@ const useStyles = makeStyles(theme => ({
     },
   }));
 
-export default function Header(){
+export default function Header(props){
     const classes = useStyles()
     const [open, setOpen] = React.useState(true)
     const handleDrawerOpen = () => {
@@ -130,7 +130,7 @@ export default function Header(){
                     <MenuIcon />
                     </IconButton>
                     <Title h="h1" color="inherit" class={classes.title} var="noWrap">
-                        Dashboard
+                        {props.title}
                     </Title>
                     <IconButton color="inherit">
                     <Badge color="secondary">
