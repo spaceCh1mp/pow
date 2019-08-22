@@ -1,4 +1,4 @@
-import React from 'react'
+import React, {useEffect, useState} from 'react'
 
 import Paper from '@material-ui/core/Paper';
 import Typography from '@material-ui/core/Typography'
@@ -47,25 +47,49 @@ const useStyle = makeStyles(theme => ({
 
 
 function Prompts(props){
-    const classes = useStyle()
+    const classes = useStyle();
+    const [prom, setProm] = useState([])
+
+    useEffect(() => {
+        setProm(rows)
+    }, [])
+
+    
+    const handleApprove = (r) => {
+        if (r.type === 0 ){
+            approvePayment(r.id)
+            return
+        }
+        approveMember(r.id)
+        return
+    }
+
+    const handleReject = (r) => {
+    if (r.type === 0 ){
+        rejectPayment(r.id)
+        return
+    }
+    rejectMember(r.id)
+    return
+}
     return (
         <React.Fragment>
-        { rows.map( row => (
+        {prom.map( row => (
             <Paper key={row.id} className={props.class}>
-                <Grid container wrap="nowrap" spacing={2} zeroMinWidth>
+                <Grid container wrap="nowrap" spacing={2}>
                 <Grid item>
                     <Avatar>W</Avatar>
                 </Grid>
-                <Grid item xs noWrap>
-                    {Prompt(row)}
+                <Grid item xs >
+                    {Prompt(row, classes.chip)}
                 </Grid>
                 <Grid align="right" item>
-                    <ColorButton variant="contained" color="primary" className={classes.button}>
+                    <ColorButton variant="contained" color="primary" className={classes.button} onClick={handleApprove.bind(this, row)}>
                         Approve
                         <CheckCircleIcon className={classes.rightIcon} />
                     </ColorButton>
                     
-                    <Button variant="contained" color="secondary" className={classes.button}>
+                    <Button variant="contained" color="secondary" className={classes.button} onClick={handleReject.bind(this, row)}>
                         Reject
                         <CancelIcon className={classes.rightIcon} />
                     </Button>
@@ -77,8 +101,7 @@ function Prompts(props){
     )
 }
 
-function Prompt(r){
-    const classes = useStyle()
+function Prompt(r, cls){
     var b = {}
     if (r.type === 0){
         //Do stuff for payment
@@ -95,7 +118,7 @@ function Prompt(r){
     //Do member stuff
     return (
         <React.Fragment>
-            <Grid container wrap="nowrap" spacing={2} zeroMinWidth>
+            <Grid container wrap="nowrap" spacing={2}>
                 <Grid item >
                     <Typography component="h3" variant="h6">
                         {r.name}
@@ -105,7 +128,7 @@ function Prompt(r){
                     <Chip
                         size="small"
                         label={r.family}
-                        className={classes.chip}
+                        className={cls}
                         color="primary"
                         component="a"
                         href="#chip"
@@ -136,4 +159,21 @@ function payment(amount){
     )
 }
 
+//payment handlers
+function approvePayment(id){
+    console.log("payment has been approved from"+id+". \n Close")
+}
+
+function rejectPayment(id){
+    console.log("payment has been rejected from"+id+". \n Close")
+}
+
+//member handlers
+function approveMember(id){
+    console.log("Request to join has been approved from"+id+". \n Close")
+}
+
+function rejectMember(id){
+    console.log("Request to join has been rejected from"+id+". \n Close")
+}
 export default Prompts 

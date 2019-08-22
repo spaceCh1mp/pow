@@ -1,4 +1,4 @@
-import React from 'react';
+import React, {useEffect, useState} from 'react';
 
 //Material UI core
 import Link from '@material-ui/core/Link';
@@ -17,7 +17,7 @@ function createData(id, date, name, type, amount, due, status) {
   return { id, date, name, type, amount, due, status};
 }
 
-const rows = [
+const testRows = [
   createData(0, '16 Mar, 2019', 'Elvis Presley', 'member', null, null, 'approved'),
   createData(2, '16 Mar, 2019', 'Paul McCartney', 'payment', '600', '30 Aug, 2019', 'approved'),
   createData(3, '16 Mar, 2019', 'Elvis Presley', 'member', null, null, 'approved'),
@@ -34,6 +34,13 @@ const useStyles = makeStyles(theme => ({
 
 export default function Orders() {
   const classes = useStyles();
+  const [logs, setLogs] = useState([])
+  
+  useEffect(() => {
+    //fetch data when component mounts
+    setLogs(testRows)
+  }, [])
+
   return (
     <React.Fragment>
       <Title h="h2" color="primary">Logs</Title>
@@ -49,7 +56,7 @@ export default function Orders() {
           </TableRow>
         </TableHead>
         <TableBody>
-          {rows.map(row => (
+          {logs.map(row => (
             <TableRow key={row.id}>
               <TableCell>{row.date}</TableCell>
               <TableCell>{row.name}</TableCell>
