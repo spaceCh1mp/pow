@@ -1,0 +1,217 @@
+body{
+	background-color: #C6B8CC;
+	font-family: "Gill Sans MT";
+}
+
+.oga{
+	position: relative;
+	height:800px;
+	width:1200px;
+	left:160px;
+	
+	}
+
+.container{
+	position: absolute;
+	background-color: #4B0F61;
+	height:600px;
+	width:900px;
+	left:140px;
+	top: 80px;
+	display: flex;
+	flex-direction: row;
+	justify-content: space-between;
+	padding: 60px 90px 60px 90px;
+	z-index: 20;
+	box-shadow: 0px 0px 15px black;
+}
+
+h5{
+	position: absolute;
+	color: white;	
+	top: 98px;
+	left:230px;
+	z-index: 40;
+	transition: 1s;
+	cursor: default;
+
+}
+
+h5:hover{
+	font-size: 24px;
+}
+
+hr{
+	position: relative;
+	top: 130px;
+	left: 230px;
+	max-width: 310px;
+	border-width: 1px;
+	border-color: rgba(255, 255, 255, 0.6);
+	z-index: 35;
+}
+
+.box
+{
+	
+	width: 320px;
+	background-color: white;
+}
+
+.left.box
+{
+	background-color: #44065C;
+	display: flex;
+	flex-direction: column;
+	justify-content: space-between;
+	padding: 1px 1px 1px 1px;
+	box-shadow: 0px 0px 7px black;
+}
+
+.right
+{
+	position:relative;
+	border: 6px solid;
+	border-color: #44065C;
+	box-shadow: 0px 0px 7px black;
+
+}
+
+.right-box-cont{
+	position:absolute;
+	top:35px;
+	left:30px;
+	width:250px;
+}
+
+label{
+	color: #5B047A;
+}
+
+.col{
+	background-color: #44065C;
+	border: 4px solid #44065C;
+	height:2px;
+	width:400px;
+}
+
+.top.col{
+	padding-bottom: 15px;
+	background-color: #44065C;
+}
+
+.top-col-ctn{
+	border: 7px solid white;
+	border-radius: 40px;
+	position: relative;
+	top: 10px;
+	height: 220px;
+	transition: 2.5s;
+}
+
+.top-col-ctn:hover{
+	transform: rotateY(180deg);
+}
+
+#profile-pic{
+	position: relative;
+	top:10px;
+	left:35px;
+	cursor:pointer;
+}
+
+.btm{
+	padding-top: 10px;
+	background-color:white;
+}
+
+.firstbtn{
+	position: relative;
+	background-color: #BA8ECD;
+	border-color: #BA8ECD;
+	left: 15px;
+}
+
+.secbtn{
+	position: relative;
+	background-color: #BA8ECD;
+	border-color: #BA8ECD;
+	left: 40px;
+}
+
+.btm-col-ctn{
+	position: relative;
+	top: 15px;
+	left: 15px;
+	width:250px;
+	height: 180px;
+}
+
+#sub, #add-sub, #subscr-input{
+	position: relative;
+	left: 80px;
+}
+
+#subscr-input{
+	left: 100px;
+	border-radius: 6px;
+	border-color: rgba(128,128,128,0.4);
+	border-width: 1px;
+}
+
+#add-sub{
+	left: 48px;
+}
+
+#plus-icon{
+	position: relative;
+	left: 48px;
+}
+
+#plus-icon:hover{
+	cursor: pointer;
+}
+
+@keyframes jump{
+   0%,50%,100%{
+    bottom:0;
+    animation-timing-function: ease-out; ;
+   }
+
+   25%,75%{
+    bottom:13px;
+    animation-timing-function: ease-in;
+   }
+
+}
+
+.icon{
+	position: relative;
+	height: 40px;
+	animation-name: jump;
+  	animation-duration: 2s;
+  	animation-iteration-count: infinite;
+}
+
+.applemusic {
+ 	height:32px;
+ 	animation-duration: 1.7s;
+ }
+
+.netflix {
+  	animation-duration: 2s;
+}
+
+.prime {
+  	animation-duration: 2.3s;
+}
+
+.spotify{
+	height: 32px;
+	animation-duration: 2.6s;
+}
+
+.youtube{
+	height: 55px;
+	animation-duration: 2.9s;
+}
