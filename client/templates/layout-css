@@ -1,0 +1,77 @@
+body{
+	background-color: #C6B8CC;
+	font-family: "MV Boli","Gill Sans MT";
+}
+
+.oga{
+	position: relative;
+
+	height:800px;
+	width:1200px;
+	left:160px;
+	
+	}
+
+.container{
+	position: absolute;
+	background-color: #44065C;
+	height:600px;
+	width:900px;
+	left:140px;
+	top: 100px;
+	display: flex;
+	flex-direction: row;
+	justify-content: space-between;
+	padding: 60px 90px 60px 90px;
+}
+
+h6{
+	position: relative;
+	left:90px;
+	top:-30px;
+	color: white;
+	
+
+}
+
+hr{
+	max-width: 1px;
+	border-width: 2px;
+	border-color: white;
+}
+
+.box
+{
+	width: 320px;
+	background-color: white;
+}
+
+.left.box
+{
+	background-color: #44065C;
+	display: flex;
+	flex-direction: column;
+	justify-content: space-between;
+	padding: 1px 1px 1px 1px;
+}
+
+.right.box{
+
+}
+
+.col{
+	background-color: #44065C;
+	border: 4px solid #44065C;
+	height:2px;
+	width:400px;
+}
+
+.top.col{
+	padding-bottom: 15px;
+	background-color:white;
+}
+
+.btm{
+	padding-top: 10px;
+	background-color:white;
+}
