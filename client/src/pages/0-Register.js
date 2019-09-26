@@ -1,4 +1,6 @@
 import React from 'react';
+
+//Material components
 import Avatar from '@material-ui/core/Avatar';
 import Button from '@material-ui/core/Button';
 import CssBaseline from '@material-ui/core/CssBaseline';
@@ -6,12 +8,20 @@ import TextField from '@material-ui/core/TextField';
 import Link from '@material-ui/core/Link';
 import Grid from '@material-ui/core/Grid';
 import Box from '@material-ui/core/Box';
+
+//Material Icons
 import PersonIcon from '@material-ui/icons/Person';
 import Typography from '@material-ui/core/Typography';
 import { makeStyles } from '@material-ui/core/styles';
 import Container from '@material-ui/core/Container';
 
+//Core components
 import Copyright from './../components/Copyright/copyright'
+
+//helpers
+//import {dial} from './../helpers/api/api'
+import { NewUser } from './../helpers/api/api_pb.js';
+import { UsersClient } from './../helpers/api/api_grpc_web_pb.js';
 
 const useStyles = makeStyles(theme => ({
   '@global': {
@@ -44,7 +54,21 @@ const useStyles = makeStyles(theme => ({
 
 export default function Register() {
   const classes = useStyles();
+  const regUser = () => {
+    var userService = new UsersClient('http://localhost:8080', null, null);
 
+    let req = new NewUser();
+    // req.setId('oirmfklg994kf')
+    req.setFirstname("kene")
+    req.setLastname('hue')
+    req.setEmail('jfka')
+    req.setPassword('kfhiue9')
+  
+    userService.create(req, {}, function(err, response) {
+      
+      console.log(response.getId())
+    });
+  }
   return (
     <Container component="main" maxWidth="xs">
       <CssBaseline />
@@ -109,6 +133,7 @@ export default function Register() {
             variant="contained"
             color="primary"
             className={classes.submit}
+             onClick={regUser}
           >
             Register
           </Button>
@@ -125,5 +150,19 @@ export default function Register() {
         <Copyright />
       </Box>
     </Container>
-  );
+  ); 
 }
+
+// function regUser(){
+//   //get form id
+//   let nu = {
+//     firstName: "kene",
+//     lastName: "stoned",
+//     email:"kenechukwuagugua@gmail.com",
+//     password: "getRandString",
+//   }
+
+//   var user = dial(nu)
+//   console.log(user)
+
+// }

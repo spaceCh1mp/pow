@@ -8,9 +8,11 @@ import ListItemText from '@material-ui/core/ListItemText'
 import DashboardIcon from '@material-ui/icons/Dashboard'
 import AccountCircleIcon from '@material-ui/icons/AccountCircle'
 
+import {Glob} from '../../helpers/glob'
+
 const Nav = (
   <div>
-    <Link href="/">
+    <Link href={Glob.URL + 'dashboard/'}>
       <ListItem button>
         <ListItemIcon>
           <DashboardIcon />
@@ -18,7 +20,7 @@ const Nav = (
         <ListItemText primary="Dashboard" />
       </ListItem>
     </Link>
-    <Link href="/account">
+    <Link href={Glob.URL + 'account/'}>
       <ListItem button>
         <ListItemIcon> 
           <AccountCircleIcon />

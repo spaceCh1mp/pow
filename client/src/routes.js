@@ -11,7 +11,6 @@ import Dashboard from './pages/Dashboard/'
 //Make dashboard and account protected routes
 
 function Routes(){
-    console.log(document.location)
     return (
         <Router>
                 <Route path="/login" component={Login} />
