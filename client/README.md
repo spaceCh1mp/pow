@@ -47,13 +47,17 @@ This is the view (frontend) for the web app pow, for a better description of the
 There are two parts to the client application, the server already takes care of ensuring both parts are up and running in production.
 
 For developers trying to run the client as a stand-alone, run the command
-> npm install.
->
+
+    :~client$ npm install.
+
 from the client directory to ensure that the dependencies are installed.
 
 To start the React application, run:
-> npm start
->
+
+    :~client$ npm start
+
+### Envoy
+
 Now it's time to run the envoy image. Ensure that you have docker installed on your system, for a step by step guide to install docker on your local machine visit [docker's website](https://docs.docker.com/install/).
 
 Run:
@@ -63,11 +67,29 @@ Run:
 
 The first command creates an image from the dockerfile in client/src/
 
-The second command runs the docker image and binds the hosts port 8081 to the container. "--net=host" does ...
+The second command runs the docker image and binds the hosts port 8081 to the container.
 
 To see containers that are running use:
 
     :~$ docker container list
+
+### Protocol buffers
+
+For developers, the proto file is located in the src/helpers/api directory.
+
+Ensure that protoc-gen-grpc-web package is installed (running npm install should take care of any dependencies) and that the path is set, to set the path run:
+
+    :~client$ PATH=$PATH:node_modules/.bin
+
+To create a new service client stub using the api.proto file run:
+
+    :~client$ protoc -I=. src/helpers/api/api.proto --js_out=import_style=commonjs,binary:. --grpc-web_out=import_style=commonjs,mode=grpcwebtext:.
+
+the above command generates two files in the same src/helpers/api directory
+
+>api_pb.js
+>
+>api_grpc_web_pb.js
 
 ## Testing
 
