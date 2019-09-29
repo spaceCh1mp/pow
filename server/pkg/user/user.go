@@ -4,11 +4,12 @@ import (
 	"context"
 	"fmt"
 	"log"
-	"math/rand"
 	"net"
-	"time"
+
+	"go.mongodb.org/mongo-driver/bson/primitive"
 
 	v1 "github.com/spaceCh1mp/pow/server/api/proto/v1"
+	db "github.com/spaceCh1mp/pow/server/db"
 	grpc "google.golang.org/grpc"
 )
 
@@ -19,19 +20,62 @@ func msg() error {
 	return fmt.Errorf("Not Implemented this method yet")
 }
 
-func genRandString() string {
-	v, pool := "", []string{"1", "2", "4", "5", "6", "8", "0", "f", "J", "o", "s", "W", "a", "7", "l", "m", "n", "b", "c", "C", "T", "r", "h"}
-	for i := 0; i < 12; i++ {
-		rand.Seed(time.Now().UnixNano())
-		v += pool[rand.Intn(len(pool))]
+func isEmpty(v interface{}) bool {
+	switch i := v.(type) {
+	case string:
+		if i == "" {
+			return true
+		}
+		break
+	default:
+		if i == nil {
+			return true
+		}
+		break
 	}
-	return v
+	return false
 }
 
 //Implement gRPC crud methods.
 func (v usersServer) Create(c context.Context, newUser *v1.NewUser) (*v1.ID, error) {
+	//validate input data
+	err := func() error {
+		if (newUser == &v1.NewUser{}) {
+			return fmt.Errorf("Empty Dataset: NewUser")
+		}
+		if isEmpty(newUser.FirstName) {
+			return fmt.Errorf("Missing Field: FirstName")
+		}
+		if isEmpty(newUser.LastName) {
+			return fmt.Errorf("Missing Field: LastName")
+		}
+		if isEmpty(newUser.Email) {
+			return fmt.Errorf("Missing Field: Email")
+		}
+		if isEmpty(newUser.Password) {
+			return fmt.Errorf("Missing Field: Password")
+		}
+		return nil
+	}()
+	if err != nil {
+		return nil, err
+	}
+
+	client, err := db.Connect()
+	if err != nil {
+		//handle error properly
+	}
+
+	collection := client.Database(db.Name).Collection("user")
+
+	res, err := collection.InsertOne(context.Background(), newUser)
+	if err != nil {
+		return nil, fmt.Errorf("Insert error")
+	}
+
+	b := res.InsertedID.(primitive.ObjectID)
 	return &v1.ID{
-		Id: genRandString(),
+		Id: b.Hex(),
 	}, nil
 }
 

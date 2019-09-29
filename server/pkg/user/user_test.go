@@ -1,8 +1,7 @@
 package user
 
 import (
-	"fmt"
-	"log"
+	"errors"
 	"testing"
 
 	context "golang.org/x/net/context"
@@ -10,11 +9,13 @@ import (
 	v1 "github.com/spaceCh1mp/pow/server/api/proto/v1"
 )
 
+//Don't run any tests till the mongo server has been mocked
 //global interface for usersServer
 var usersServerTest usersServer
 
 func TestCreate(t *testing.T) {
 	// test table containing test cases for the create user method
+	er := errors.New("")
 	tt := []struct {
 		name string
 		tc   v1.NewUser
@@ -32,48 +33,49 @@ func TestCreate(t *testing.T) {
 			Email:    "Kenechukwuagugua@gmail.com",
 			Password: "123455788",
 		},
-			fmt.Errorf("Missing Field: FirstName")},
+			er},
 		{"No LastName", v1.NewUser{
 			FirstName: "Kenechukwu",
 			Email:     "Kenechukwuagugua@gmail.com",
 			Password:  "123455788",
 		},
-			fmt.Errorf("Missing Field: LastName")},
+			er},
 		{"No Email", v1.NewUser{
 			FirstName: "Kenechukwu",
 			LastName:  "Agugua",
 			Password:  "123455788",
 		},
-			fmt.Errorf("Missing Field: Email")},
+			er},
+		{"No value", v1.NewUser{}, er},
 	}
 
 	for _, v := range tt {
 		t.Run(v.name, func(t *testing.T) {
-			_, err := usersServerTest.Create(context.Background(), &v.tc)
-			if err != v.err {
-				t.Fatalf("Expected: %v \n Got: %v", v.err, err)
+			_, e := usersServerTest.Create(context.Background(), &v.tc)
+			if v.err == nil && e != v.err {
+				t.Fatalf("Expected: %v \n Got: %v", v.err, e)
 			}
 		})
 	}
 }
 
-func TestGenRandString(t *testing.T) {
-	//declare string array for a multiple of five instances
-	var str [5]string
-	//assign values to each instance
-	//(i.e) index of the array from the function to test
-	for i := range str {
-		str[i] = genRandString()
+func TestIsEmpty(t *testing.T) {
+	tt := []struct {
+		name string
+		in   interface{}
+		out  bool
+	}{
+		{"String", "Hello World!", false},
+		{"String-Empty", "", true},
+		{"Int", 0, false},
+		{"Int-Empty", nil, true},
 	}
-
-	//iterates through instances
-	for i, v := range str {
-		for _, k := range str[i+1:] {
-			if v == k {
-				t.Fail()
-				log.Println("strings should not match")
+	for _, v := range tt {
+		t.Run(v.name, func(t *testing.T) {
+			if got := isEmpty(v.in); got != v.out {
+				t.Fatalf("Expected: %v \n Got: %v", v.out, got)
 			}
-		}
+		})
 	}
 }
 
