@@ -6,8 +6,6 @@ import (
 	"log"
 	"net"
 
-	"go.mongodb.org/mongo-driver/bson/primitive"
-
 	v1 "github.com/spaceCh1mp/pow/server/api/proto/v1"
 	db "github.com/spaceCh1mp/pow/server/db"
 	grpc "google.golang.org/grpc"
@@ -16,9 +14,10 @@ import (
 type usersServer struct {
 }
 
-func msg() error {
-	return fmt.Errorf("Not Implemented this method yet")
-}
+var (
+	errMsg = fmt.Errorf("Not Implemented this method yet")
+	pool   db.MongoDB
+)
 
 func isEmpty(v interface{}) bool {
 	switch i := v.(type) {
@@ -61,38 +60,36 @@ func (v usersServer) Create(c context.Context, newUser *v1.NewUser) (*v1.ID, err
 		return nil, err
 	}
 
-	client, err := db.Connect()
-	if err != nil {
-		//handle error properly
+	//set collection to query
+	if err := pool.SetCollection("user"); err != nil {
+		//handle collection error
 	}
 
-	collection := client.Database(db.Name).Collection("user")
-
-	res, err := collection.InsertOne(context.Background(), newUser)
+	//make query
+	resp, err := pool.InsertOne(newUser)
 	if err != nil {
-		return nil, fmt.Errorf("Insert error")
+		//handle err
 	}
 
-	b := res.InsertedID.(primitive.ObjectID)
 	return &v1.ID{
-		Id: b.Hex(),
+		Id: resp,
 	}, nil
 }
 
 func (v usersServer) Read(c context.Context, id *v1.ID) (*v1.ReadUser, error) {
-	return &v1.ReadUser{}, msg()
+	return &v1.ReadUser{}, errMsg
 }
 
 func (v usersServer) ReadLog(c context.Context, id *v1.ID) (*v1.ReadUserLog, error) {
-	return &v1.ReadUserLog{}, msg()
+	return &v1.ReadUserLog{}, errMsg
 }
 
 func (v usersServer) Update(c context.Context, u *v1.UpdateUser) (*v1.Result, error) {
-	return &v1.Result{}, msg()
+	return &v1.Result{}, errMsg
 }
 
 func (v usersServer) Delete(c context.Context, id *v1.ID) (*v1.Result, error) {
-	return &v1.Result{}, msg()
+	return &v1.Result{}, errMsg
 }
 
 //Config initialises the service
@@ -103,6 +100,12 @@ func Config() error {
 	l, err := net.Listen("tcp", ":9090")
 	if err != nil {
 		log.Fatalf("Couldn't listen on port. %v", err)
+	}
+
+	pool = &db.LiveSession{}
+
+	if err := pool.Connect(); err != nil {
+		//handle connection error
 	}
 
 	log.Printf("started listening on %v", l.Addr())

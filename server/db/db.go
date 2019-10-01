@@ -6,12 +6,42 @@ import (
 	"log"
 	"time"
 
+	"go.mongodb.org/mongo-driver/bson/primitive"
+
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
-//Name exports the name of the database
-const Name = "Pow"
+const name = "Pow"
+
+//MongoDB implements methods for either a live or mock session
+type MongoDB interface {
+	Connect() error
+	Disconnect() error
+
+	SetCollection(string) error
+
+	InsertOne(interface{}) (string, error)
+}
+
+//LiveSession handles an instance of the mongo server
+//it makes live database operations
+type LiveSession struct {
+	Client     *mongo.Client
+	Collection *mongo.Collection
+}
+
+//InsertOne ...
+func (ls *LiveSession) InsertOne(document interface{}) (string, error) {
+
+	resp, err := ls.Collection.InsertOne(context.Background(), document)
+	if err != nil {
+		return "", err
+	}
+
+	r := resp.InsertedID.(primitive.ObjectID)
+	return r.Hex(), nil
+}
 
 //User field
 type User struct {
@@ -38,8 +68,8 @@ type Family struct {
 }
 
 //Connect makes a new connection with the database
-//it returns a mongo.client ibject if the operation was successful or an err if it failed
-func Connect() (*mongo.Client, error) {
+//it returns a mongo.client object if the operation was successful or an err if it failed
+func (ls *LiveSession) Connect() error {
 	//set Client options
 	clientOptions := options.Client().ApplyURI("mongodb://127.0.0.1:27017")
 
@@ -47,27 +77,41 @@ func Connect() (*mongo.Client, error) {
 	client, err := mongo.Connect(context.TODO(), clientOptions)
 
 	if err != nil {
-		return nil, fmt.Errorf("Couldn't connect to the mongodb server. \n Response: %v", err)
+		return fmt.Errorf("Couldn't connect to the mongodb server. \n Response: %v", err)
 	}
 
 	//Check connection
 	err = client.Ping(context.TODO(), nil)
 
 	if err != nil {
-		return nil, fmt.Errorf("Ping failed, Check connection. \n Response: %v", err)
+		return fmt.Errorf("Ping failed, Check connection. \n Response: %v", err)
 	}
 
-	return client, nil
+	ls.Client = client
+	return nil
 }
 
 //Disconnect closes the connection with the database using the mongo.client object
 //returns an error if the operation failed
-func Disconnect(c *mongo.Client) error {
+func (ls *LiveSession) Disconnect() error {
 
-	if err := c.Disconnect(context.TODO()); err != nil {
+	if err := ls.Client.Disconnect(context.TODO()); err != nil {
 		log.Printf("Could not close the connection.\nErr: %v", err)
 		return err
 	}
 
+	return nil
+}
+
+//SetCollection sets the name of the collection to be queried
+func (ls *LiveSession) SetCollection(cName string) error {
+	if (ls.Client == &mongo.Client{}) {
+		err := ls.Connect()
+		if err != nil {
+			return err
+		}
+	}
+
+	ls.Collection = ls.Client.Database(name).Collection(cName)
 	return nil
 }

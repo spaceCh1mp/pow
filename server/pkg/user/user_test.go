@@ -4,17 +4,21 @@ import (
 	"errors"
 	"testing"
 
+	"github.com/spaceCh1mp/pow/server/db"
+
 	context "golang.org/x/net/context"
 
 	v1 "github.com/spaceCh1mp/pow/server/api/proto/v1"
 )
 
-//Don't run any tests till the mongo server has been mocked
 //global interface for usersServer
 var usersServerTest usersServer
 
 func TestCreate(t *testing.T) {
+	//Define mockSession
+	pool = db.MockSession{}
 	// test table containing test cases for the create user method
+
 	er := errors.New("")
 	tt := []struct {
 		name string
