@@ -1,7 +1,6 @@
 package user
 
 import (
-	"errors"
 	"testing"
 
 	"github.com/spaceCh1mp/pow/server/db"
@@ -17,46 +16,45 @@ var usersServerTest usersServer
 func TestCreate(t *testing.T) {
 	//Define mockSession
 	pool = db.MockSession{}
-	// test table containing test cases for the create user method
 
-	er := errors.New("")
+	// test table containing test cases for the create user method
 	tt := []struct {
 		name string
-		tc   v1.NewUser
+		tc   *v1.NewUser
 		err  error
 	}{
-		{"Ok", v1.NewUser{
+		{"Ok", &v1.NewUser{
 			FirstName: "Kenechukwu",
 			LastName:  "Agugua",
 			Email:     "Kenechukwuagugua@gmail.com",
 			Password:  "123455788",
 		},
 			nil},
-		{"No FirstName", v1.NewUser{
+		{"No FirstName", &v1.NewUser{
 			LastName: "Agugua",
 			Email:    "Kenechukwuagugua@gmail.com",
 			Password: "123455788",
 		},
-			er},
-		{"No LastName", v1.NewUser{
+			errMF},
+		{"No LastName", &v1.NewUser{
 			FirstName: "Kenechukwu",
 			Email:     "Kenechukwuagugua@gmail.com",
 			Password:  "123455788",
 		},
-			er},
-		{"No Email", v1.NewUser{
+			errML},
+		{"No Email", &v1.NewUser{
 			FirstName: "Kenechukwu",
 			LastName:  "Agugua",
 			Password:  "123455788",
 		},
-			er},
-		{"No value", v1.NewUser{}, er},
+			errME},
+		{"No value", &v1.NewUser{}, errED},
 	}
 
 	for _, v := range tt {
 		t.Run(v.name, func(t *testing.T) {
-			_, e := usersServerTest.Create(context.Background(), &v.tc)
-			if v.err == nil && e != v.err {
+			_, e := usersServerTest.Create(context.Background(), v.tc)
+			if v.err != e {
 				t.Fatalf("Expected: %v \n Got: %v", v.err, e)
 			}
 		})

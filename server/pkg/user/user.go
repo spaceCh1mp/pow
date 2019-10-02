@@ -39,20 +39,20 @@ func isEmpty(v interface{}) bool {
 func (v usersServer) Create(c context.Context, newUser *v1.NewUser) (*v1.ID, error) {
 	//validate input data
 	err := func() error {
-		if (newUser == &v1.NewUser{}) {
-			return fmt.Errorf("Empty Dataset: NewUser")
+		if (*newUser == v1.NewUser{}) {
+			return errED
 		}
 		if isEmpty(newUser.FirstName) {
-			return fmt.Errorf("Missing Field: FirstName")
+			return errMF
 		}
 		if isEmpty(newUser.LastName) {
-			return fmt.Errorf("Missing Field: LastName")
+			return errML
 		}
 		if isEmpty(newUser.Email) {
-			return fmt.Errorf("Missing Field: Email")
+			return errME
 		}
 		if isEmpty(newUser.Password) {
-			return fmt.Errorf("Missing Field: Password")
+			return errMP
 		}
 		return nil
 	}()
