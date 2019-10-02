@@ -8,6 +8,7 @@ import (
 
 	v1 "github.com/spaceCh1mp/pow/server/api/proto/v1"
 	db "github.com/spaceCh1mp/pow/server/db"
+	"go.mongodb.org/mongo-driver/bson"
 	grpc "google.golang.org/grpc"
 )
 
@@ -33,6 +34,19 @@ func isEmpty(v interface{}) bool {
 		break
 	}
 	return false
+}
+
+func collection(str string) error {
+	err := pool.SetCollection(str)
+	if err != nil {
+		//try to re-establish a connection
+		//if it fails return the error
+		err = pool.Connect()
+		if err != nil {
+			return errFC
+		}
+	}
+	return nil
 }
 
 //Implement gRPC crud methods.
@@ -61,14 +75,14 @@ func (v usersServer) Create(c context.Context, newUser *v1.NewUser) (*v1.ID, err
 	}
 
 	//set collection to query
-	if err := pool.SetCollection("user"); err != nil {
-		//handle collection error
+	if err := collection("user"); err != nil {
+		return nil, err
 	}
 
 	//make query
-	resp, err := pool.InsertOne(newUser)
+	resp, err := pool.InsertUser(newUser)
 	if err != nil {
-		//handle err
+		return nil, errWE
 	}
 
 	return &v1.ID{
@@ -77,7 +91,23 @@ func (v usersServer) Create(c context.Context, newUser *v1.NewUser) (*v1.ID, err
 }
 
 func (v usersServer) Read(c context.Context, id *v1.ID) (*v1.ReadUser, error) {
-	return &v1.ReadUser{}, errMsg
+	//take id string and turn it into an objectid
+	err := collection("user")
+	if err != nil {
+		return nil, err
+	}
+
+	r, err := pool.ReadUser(bson.M{"_id": id.GetId()})
+	if err != nil {
+		//if there's no response
+		//if there's an err from the operation
+		return nil, err
+	}
+	return &v1.ReadUser{
+		Name:     fmt.Sprintf("%v %v", r.FirstName, r.LastName),
+		Username: r.UserName,
+		Email:    r.Email,
+	}, nil
 }
 
 func (v usersServer) ReadLog(c context.Context, id *v1.ID) (*v1.ReadUserLog, error) {

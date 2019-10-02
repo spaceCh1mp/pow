@@ -6,6 +6,7 @@ import (
 	"log"
 	"time"
 
+	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 
 	"go.mongodb.org/mongo-driver/mongo"
@@ -14,6 +15,20 @@ import (
 
 const name = "Pow"
 
+//Users model
+type Users struct {
+	FamilyID string `json:"family_id" bson:"family_id"`
+
+	FirstName string `json:"firstName" bson:"firstName"`
+	LastName  string `json:"lastName" bson:"lastName"`
+	UserName  string `json:"userName" bson:"userName"`
+
+	Email    string `json:"email" bson:"email"`
+	Password string `json:"password" bson:"password"`
+
+	Log Transactions `json:"log" bson:"log"`
+}
+
 //MongoDB implements methods for either a live or mock session
 type MongoDB interface {
 	Connect() error
@@ -21,7 +36,8 @@ type MongoDB interface {
 
 	SetCollection(string) error
 
-	InsertOne(interface{}) (string, error)
+	InsertUser(interface{}) (string, error)
+	ReadUser(bson.M) (Users, error)
 }
 
 //LiveSession handles an instance of the mongo server
@@ -31,9 +47,8 @@ type LiveSession struct {
 	Collection *mongo.Collection
 }
 
-//InsertOne ...
-func (ls *LiveSession) InsertOne(document interface{}) (string, error) {
-
+//InsertUser ...
+func (ls *LiveSession) InsertUser(document interface{}) (string, error) {
 	resp, err := ls.Collection.InsertOne(context.Background(), document)
 	if err != nil {
 		return "", err
@@ -43,24 +58,24 @@ func (ls *LiveSession) InsertOne(document interface{}) (string, error) {
 	return r.Hex(), nil
 }
 
-//User field
-type User struct {
-	FamilyID string `json:"family_id" bson:"family_id"`
+//ReadUser ...
+func (ls *LiveSession) ReadUser(filter bson.M) (Users, error) {
+	var u Users
+	resp := ls.Collection.FindOne(context.Background(), filter)
 
-	Name     string `json:"name" bson:"name"`
-	Email    string `json:"email" bson:"email"`
-	Password string `json:"password" bson:"password"`
-
-	Log Transaction `json:"log" bson:"log"`
+	if err := resp.Decode(&u); err != nil {
+		return Users{}, err
+	}
+	return u, nil
 }
 
-//Transaction field
-type Transaction struct {
+//Transactions model
+type Transactions struct {
 	Date   time.Time `json:"log" bson:"log"` // change to time stamp
 	Amount uint      `json:"amount" bson:"amount"`
 }
 
-//Family field
+//Family model
 type Family struct {
 	Name        string   `json:"name" bson:"name"`
 	OrganiserID string   `json:"organiser_id" bson:"organiser_id"`
@@ -104,12 +119,10 @@ func (ls *LiveSession) Disconnect() error {
 }
 
 //SetCollection sets the name of the collection to be queried
+//it returns an error if the client is been disconnected
 func (ls *LiveSession) SetCollection(cName string) error {
-	if (ls.Client == &mongo.Client{}) {
-		err := ls.Connect()
-		if err != nil {
-			return err
-		}
+	if ls.Client == nil {
+		return mongo.ErrClientDisconnected
 	}
 
 	ls.Collection = ls.Client.Database(name).Collection(cName)
