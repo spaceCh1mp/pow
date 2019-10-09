@@ -1,11 +1,12 @@
 package db
 
 import (
-	"context"
+	"encoding/json"
 
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
+	context "golang.org/x/net/context"
 )
 
 //MockSession mocks the instance of the mongo server
@@ -14,30 +15,31 @@ type MockSession struct {
 	C bool
 }
 
-//InsertUser ...
+//InsertUser (mock) ...
 func (ms MockSession) InsertUser(document interface{}) (string, error) {
+
 	return primitive.NewObjectID().Hex(), nil
+
 }
 
 //ReadUser ...
-func (ms MockSession) ReadUser(filter bson.M) (Users, error) {
-	m := filter["_id"].(string)
+func (ms MockSession) ReadUser(filter string) (*Users, error) {
 
 	//dummy reply for when the Find operation fails
 	//possible cause would be a wrong ObjectId
-	_, err := primitive.ObjectIDFromHex(m)
+	_, err := primitive.ObjectIDFromHex(filter)
 	if err != nil {
 		r := mongo.SingleResult{}
-		return Users{}, r.Err()
+		return nil, r.Err()
 	}
 
 	//dummy reply for when no document is returned
-	if m == "4af9f070a466655aeb230cbd" {
-		return Users{}, mongo.ErrNoDocuments
+	if filter == "4af9f070a466655aeb230cbd" {
+		return nil, mongo.ErrNoDocuments
 	}
 
 	//If everything goes well
-	return Users{
+	return &Users{
 		FamilyID:  "",
 		FirstName: "kene",
 		LastName:  "agugua",
@@ -46,8 +48,40 @@ func (ms MockSession) ReadUser(filter bson.M) (Users, error) {
 	}, nil
 }
 
+func updateParams(b []byte) interface{} {
+	var us Users
+	_ = json.Unmarshal(b, &us)
+
+	return us
+}
+
+//UpdateUser ...
+func (ms MockSession) UpdateUser(id string, b []byte) error {
+	//check if\
+	var d interface{}
+	err := bson.UnmarshalExtJSON(b, false, &d)
+	if err != nil {
+
+	}
+
+	return nil
+}
+
+//DeleteUser ...
+func (ms MockSession) DeleteUser(filter string) error {
+	//dummy reply for when the Delete operation fails.
+	//possible cause would be an invalid ObjectId
+	err := valid(filter)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
 //Connect Does nothing
 func (ms MockSession) Connect() error {
+
 	if !ms.C {
 		var c = mongo.Client{}
 		return c.Ping(context.TODO(), nil)
@@ -65,4 +99,9 @@ func (ms MockSession) SetCollection(string) error {
 		return mongo.ErrClientDisconnected
 	}
 	return nil
+}
+
+func valid(f string) error {
+	_, err := primitive.ObjectIDFromHex(f)
+	return err
 }

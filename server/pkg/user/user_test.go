@@ -87,6 +87,7 @@ func TestCreate(t *testing.T) {
 func TestRead(t *testing.T) {
 	//Define mockSession
 	pool = db.MockSession{C: true}
+
 	//reply
 	r := mongo.SingleResult{}
 	tt := []struct {
@@ -125,6 +126,85 @@ func TestRead(t *testing.T) {
 	}
 }
 
+func TestDelete(t *testing.T) {
+	pool = &db.MockSession{C: true}
+
+	tt := []struct {
+		name string
+		in   *v1.ID
+		res  *v1.Result
+		out  error
+	}{
+		{
+			"Ok", &v1.ID{Id: primitive.NewObjectID().Hex()},
+			&v1.Result{Status: true}, nil,
+		}, {
+			"Failed to delete data", &v1.ID{Id: "4af9f070a466"},
+			&v1.Result{Status: false}, nil,
+		}, {
+			"Failed to Set Collection", &v1.ID{Id: "howdy"},
+			nil, errFC,
+		},
+	}
+
+	for _, v := range tt {
+		t.Run(v.name, func(t *testing.T) {
+
+			//set different connection data to test
+			if v.name == "Failed to Set Collection" {
+				pool = db.MockSession{C: false}
+			}
+
+			resp, err := usersServerTest.Delete(context.Background(), v.in)
+			if err != v.out || resp.GetStatus() != v.res.GetStatus() {
+				t.Fatalf("Expected{\nresult:%v\nerr:%v\n}\n Got{\nresult:%v\nerr:%v\n}",
+					v.res.GetStatus(), v.out, resp.GetStatus(), err)
+			}
+		})
+	}
+}
+
+func TestUpdate(t *testing.T) {
+	//Define mockSession
+	pool = db.MockSession{C: true}
+
+	tt := []struct {
+		name   string
+		u      *v1.UpdateUser
+		status bool
+		err    error
+	}{
+		{"Ok", &v1.UpdateUser{
+			Id:        primitive.NewObjectID().Hex(),
+			FirstName: "Kenechukwu",
+			Email:     "Kenechukwuagugua@gmail.com",
+		},
+			true, nil},
+		{"No Id", &v1.UpdateUser{
+			FirstName: "Kenechukwu",
+			Email:     "Kenechukwuagugua@gmail.com",
+			Password:  "123455788",
+		},
+			false, errID},
+		{"Invalid ID", &v1.UpdateUser{
+			Id:        "ojmovm0emi3m03mic",
+			FirstName: "Kenechukwu",
+			Email:     "Kenechukwuagugua@gmail.com",
+		},
+			false, errID},
+	}
+
+	for _, v := range tt {
+		t.Run(v.name, func(t *testing.T) {
+			got, err := usersServerTest.Update(context.Background(), v.u)
+			if err != v.err || got.Status != v.status {
+				t.Fatalf("Expected{\nresult:%v\nerr:%v\n}\n Got{\nresult:%v\nerr:%v\n}",
+					v.status, v.err, got.GetStatus(), err)
+			}
+		})
+	}
+}
+
 func TestIsEmpty(t *testing.T) {
 	tt := []struct {
 		name string
@@ -144,11 +224,3 @@ func TestIsEmpty(t *testing.T) {
 		})
 	}
 }
-
-// func TestCow(t *testing.T) {
-// 	got := Cow()
-// 	expected := "Co"
-// 	if got != expected {
-// 		t.Fatalf("%v | %v", got, expected)
-// 	}
-// }

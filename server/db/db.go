@@ -1,32 +1,33 @@
 package db
 
 import (
-	"context"
+	"errors"
 	"fmt"
 	"log"
-	"time"
 
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
+	context "golang.org/x/net/context"
 
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
-const name = "Pow"
+const name = "pow"
 
 //Users model
 type Users struct {
-	FamilyID string `json:"family_id" bson:"family_id"`
+	ID       primitive.ObjectID `json:"id,omitempty" bson:"_id"`
+	FamilyID string             `json:"family_id,omitempty" bson:"family_id"`
 
-	FirstName string `json:"firstName" bson:"firstName"`
-	LastName  string `json:"lastName" bson:"lastName"`
-	UserName  string `json:"userName" bson:"userName"`
+	FirstName string `json:"firstName,omitempty" bson:"firstname"`
+	LastName  string `json:"lastName,omitempty" bson:"lastname"`
+	UserName  string `json:"userName,omitempty" bson:"username"`
 
-	Email    string `json:"email" bson:"email"`
-	Password string `json:"password" bson:"password"`
+	Email    string `json:"email,omitempty" bson:"email"`
+	Password string `json:"password,omitempty" bson:"password"`
 
-	Log Transactions `json:"log" bson:"log"`
+	Log *Transactions `json:"log,omitempty" bson:"log"`
 }
 
 //MongoDB implements methods for either a live or mock session
@@ -37,7 +38,9 @@ type MongoDB interface {
 	SetCollection(string) error
 
 	InsertUser(interface{}) (string, error)
-	ReadUser(bson.M) (Users, error)
+	ReadUser(string) (*Users, error)
+	UpdateUser(string, []byte) error
+	DeleteUser(string) error
 }
 
 //LiveSession handles an instance of the mongo server
@@ -47,8 +50,16 @@ type LiveSession struct {
 	Collection *mongo.Collection
 }
 
+func (ls *LiveSession) s() string {
+	var r interface{}
+	r = "pow"
+	p := r.(string)
+	return p
+}
+
 //InsertUser ...
 func (ls *LiveSession) InsertUser(document interface{}) (string, error) {
+
 	resp, err := ls.Collection.InsertOne(context.Background(), document)
 	if err != nil {
 		return "", err
@@ -56,23 +67,91 @@ func (ls *LiveSession) InsertUser(document interface{}) (string, error) {
 
 	r := resp.InsertedID.(primitive.ObjectID)
 	return r.Hex(), nil
+
 }
 
 //ReadUser ...
-func (ls *LiveSession) ReadUser(filter bson.M) (Users, error) {
-	var u Users
-	resp := ls.Collection.FindOne(context.Background(), filter)
+func (ls *LiveSession) ReadUser(filter string) (*Users, error) {
+
+	var u *Users
+
+	i, err := primitive.ObjectIDFromHex(filter)
+	if err != nil {
+		return nil, err
+	}
+
+	resp := ls.Collection.FindOne(context.Background(), bson.M{"_id": i})
 
 	if err := resp.Decode(&u); err != nil {
-		return Users{}, err
+		return nil, err
 	}
+
 	return u, nil
+
+}
+
+//UpdateUser Doesn't work check https://github.com/spaceCh1mp/pow/issues/8#issue-504882414 for the issue
+func (ls *LiveSession) UpdateUser(id string, b []byte) error {
+
+	// i, err := primitive.ObjectIDFromHex(id)
+	// if err != nil {
+	// 	return err
+	// }
+
+	// log.Println("cow")
+	// var update interface{}
+	// err = bson.UnmarshalExtJSON(b, false, &update)
+	// if err != nil {
+	// 	return err
+	// }
+
+	// filter := bson.M{
+	// 	"_id": bson.M{
+	// 		"$eq": i, // check if bool field has value of 'false'
+	// 	},
+	// }
+	// updat := bson.M{
+	// 	"$set": bson.M{
+	// 	},
+	// }
+	// log.Println("cow")
+	// _, err = ls.Collection.UpdateOne(context.Background(), filter, updat) //problem
+
+	// log.Println("cow")
+
+	// if err != nil {
+	// 	return err
+	// }
+
+	// return nil
+
+	panic(fmt.Errorf("UpdateUser method doesn't work, Check https://github.com/spaceCh1mp/pow/issues/8#issue-504882414 for the issue "))
+}
+
+//DeleteUser ...
+func (ls *LiveSession) DeleteUser(filter string) error {
+
+	i, err := primitive.ObjectIDFromHex(filter)
+	if err != nil {
+		return err
+	}
+
+	resp, err := ls.Collection.DeleteOne(context.TODO(), bson.M{"_id": i})
+	if err != nil {
+		return err
+	}
+
+	if resp.DeletedCount < int64(1) {
+		return errors.New("")
+	}
+
+	return nil
 }
 
 //Transactions model
 type Transactions struct {
-	Date   time.Time `json:"log" bson:"log"` // change to time stamp
-	Amount uint      `json:"amount" bson:"amount"`
+	Date   string `json:"log" bson:"log"` // change to time stamp
+	Amount uint   `json:"amount" bson:"amount"`
 }
 
 //Family model

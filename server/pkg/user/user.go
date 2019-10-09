@@ -2,17 +2,37 @@ package user
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"log"
 	"net"
 
 	v1 "github.com/spaceCh1mp/pow/server/api/proto/v1"
 	db "github.com/spaceCh1mp/pow/server/db"
-	"go.mongodb.org/mongo-driver/bson"
 	grpc "google.golang.org/grpc"
 )
 
 type usersServer struct {
+}
+
+//Config initialises the service
+func Config() error {
+	s := grpc.NewServer()
+	var user usersServer
+	v1.RegisterUsersServer(s, user)
+	l, err := net.Listen("tcp", ":9090")
+	if err != nil {
+		log.Fatalf("Couldn't listen on port. %v", err)
+	}
+
+	pool = &db.LiveSession{}
+
+	if err := pool.Connect(); err != nil {
+		//handle connection error
+	}
+
+	log.Printf("started listening on %v", l.Addr())
+	return fmt.Errorf("%v", s.Serve(l))
 }
 
 var (
@@ -53,7 +73,7 @@ func collection(str string) error {
 func (v usersServer) Create(c context.Context, newUser *v1.NewUser) (*v1.ID, error) {
 	//validate input data
 	err := func() error {
-		if (*newUser == v1.NewUser{}) {
+		if (*newUser == v1.NewUser{} || newUser == nil) {
 			return errED
 		}
 		if isEmpty(newUser.FirstName) {
@@ -82,7 +102,7 @@ func (v usersServer) Create(c context.Context, newUser *v1.NewUser) (*v1.ID, err
 	//make query
 	resp, err := pool.InsertUser(newUser)
 	if err != nil {
-		return nil, errWE
+		return nil, err
 	}
 
 	return &v1.ID{
@@ -91,21 +111,21 @@ func (v usersServer) Create(c context.Context, newUser *v1.NewUser) (*v1.ID, err
 }
 
 func (v usersServer) Read(c context.Context, id *v1.ID) (*v1.ReadUser, error) {
-	//take id string and turn it into an objectid
+
 	err := collection("user")
 	if err != nil {
 		return nil, err
 	}
 
-	r, err := pool.ReadUser(bson.M{"_id": id.GetId()})
+	r, err := pool.ReadUser(id.Id)
 	if err != nil {
 		//if there's no response
 		//if there's an err from the operation
 		return nil, err
 	}
 	return &v1.ReadUser{
-		Name:     fmt.Sprintf("%v %v", r.FirstName, r.LastName),
-		Username: r.UserName,
+		Name:     r.FirstName,
+		Username: r.LastName,
 		Email:    r.Email,
 	}, nil
 }
@@ -115,29 +135,37 @@ func (v usersServer) ReadLog(c context.Context, id *v1.ID) (*v1.ReadUserLog, err
 }
 
 func (v usersServer) Update(c context.Context, u *v1.UpdateUser) (*v1.Result, error) {
-	return &v1.Result{}, errMsg
+	id := u.GetId()
+	u.Id = "" //empty the userId
+
+	b, err := json.Marshal(u)
+	if err != nil {
+		return nil, err
+	}
+
+	err = pool.UpdateUser(id, b)
+	if err != nil {
+		return nil, err
+	}
+
+	return &v1.Result{
+		Status: true,
+	}, nil
+
 }
 
 func (v usersServer) Delete(c context.Context, id *v1.ID) (*v1.Result, error) {
-	return &v1.Result{}, errMsg
-}
 
-//Config initialises the service
-func Config() error {
-	s := grpc.NewServer()
-	var user usersServer
-	v1.RegisterUsersServer(s, user)
-	l, err := net.Listen("tcp", ":9090")
+	e := collection("user")
+
+	if e != nil {
+		return nil, e
+	}
+
+	err := pool.DeleteUser(id.Id)
 	if err != nil {
-		log.Fatalf("Couldn't listen on port. %v", err)
+		return &v1.Result{Status: false}, nil
 	}
 
-	pool = &db.LiveSession{}
-
-	if err := pool.Connect(); err != nil {
-		//handle connection error
-	}
-
-	log.Printf("started listening on %v", l.Addr())
-	return fmt.Errorf("%v", s.Serve(l))
+	return &v1.Result{Status: true}, nil
 }
