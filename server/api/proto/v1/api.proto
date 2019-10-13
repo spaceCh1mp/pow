@@ -14,22 +14,22 @@ message Result {
 message Void{}
 
 // implement crud for user
-//Create
-message NewUser {
+
+message User {
     string firstName = 1;
     string lastName = 2;
+    string userName = 6;
     string email = 3;
     string password = 4;
+    string familyID = 5;
 }
 //read
 message ReadUser{
-    string name = 1;
-    string username = 2;
+    string firstName = 1;
+    string lastName = 2;
+    string userName = 5;
     string email = 3;
-}
-
-message ReadUserLog{
-    repeated Transaction Transactions = 5;
+    string familyID = 4;
 }
 
 //update 
@@ -44,11 +44,10 @@ message UpdateUser{
 
 service Users{
     //create new user
-    rpc Create(NewUser) returns(ID) {}
+    rpc Create(User) returns(ID) {}
     
     //read user data
     rpc Read(ID) returns(ReadUser) {}
-    rpc ReadLog(ID) returns(ReadUserLog) {}
     
     //update user data (logs included)
     rpc Update(UpdateUser) returns(Result) {}
@@ -61,13 +60,15 @@ service Users{
 message NewGroup{
     float rate = 1;
     string name = 2;
-    string organiser = 3;
+    string orgID = 3;
 }
 //read
 message Group{
     string id = 1;
     float rate = 2;
     string name = 3;
+    string orgID = 4;
+    repeated ID memID = 5;
 }
 
 //update 
@@ -75,6 +76,7 @@ message UpdateGroup{
     string id = 1;
     string name = 2;
     float rate = 3;
+    string orgID = 4;
 }
 
 message GroupMember{
@@ -82,22 +84,16 @@ message GroupMember{
     string userid = 2;
 }
 
-message Members{
-    repeated ReadUser user = 1;
-}
-
 service Groups{
     rpc Create(NewGroup) returns(ID) {}
     
     rpc Read(ID) returns(Group) {}
-    rpc ReadGroupMembers(ID) returns(Members) {}
-    rpc ReadGroupOrganiser(ID) returns(ReadUser) {}
+   rpc ReadGroupOrganiser(ID) returns(ReadUser) {}
     
     rpc Update(UpdateGroup) returns(Result) {}
     rpc UpdateMember(GroupMember) returns(Result) {}
     
     rpc Delete(ID) returns(Result) {}
-    rpc DeleteMember(GroupMember) returns(Result){}
 }
 
 //Transaction
@@ -105,20 +101,17 @@ service Groups{
 message NewTransaction{
     float amount =1;
     string userid = 2;
+    string date = 3;
 }
 
 message Transaction{
     string id = 1;
     float amount = 2;
     string userid = 3;
-}
-
-message TID{
-    string id = 1;
-    string userid = 2;
+    string date = 4;
 }
 
 service Transactions{
-    rpc Create(NewTransaction) returns(Result){}
-    rpc ReadTransaction(TID) returns(Transaction){}  
+    rpc Create(NewTransaction) returns(Transaction){}
+    rpc ReadTransaction(ID) returns(Transaction){}  
 }
