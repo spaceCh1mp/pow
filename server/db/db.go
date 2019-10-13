@@ -17,8 +17,8 @@ const name = "pow"
 
 //Users model
 type Users struct {
-	ID       primitive.ObjectID `json:"id,omitempty" bson:"_id"`
-	FamilyID string             `json:"family_id,omitempty" bson:"family_id"`
+	ID       *primitive.ObjectID `json:"id,omitempty" bson:"_id"`
+	FamilyID string              `json:"familyID,omitempty" bson:"family_id"`
 
 	FirstName string `json:"firstName,omitempty" bson:"firstname"`
 	LastName  string `json:"lastName,omitempty" bson:"lastname"`
@@ -26,8 +26,6 @@ type Users struct {
 
 	Email    string `json:"email,omitempty" bson:"email"`
 	Password string `json:"password,omitempty" bson:"password"`
-
-	Log *Transactions `json:"log,omitempty" bson:"log"`
 }
 
 //MongoDB implements methods for either a live or mock session
@@ -38,9 +36,9 @@ type MongoDB interface {
 	SetCollection(string) error
 
 	InsertUser(interface{}) (string, error)
-	ReadUser(string) (*Users, error)
+	Read(string) (interface{}, error)
 	UpdateUser(string, []byte) error
-	DeleteUser(string) error
+	Delete(string) error
 }
 
 //LiveSession handles an instance of the mongo server
@@ -48,13 +46,6 @@ type MongoDB interface {
 type LiveSession struct {
 	Client     *mongo.Client
 	Collection *mongo.Collection
-}
-
-func (ls *LiveSession) s() string {
-	var r interface{}
-	r = "pow"
-	p := r.(string)
-	return p
 }
 
 //InsertUser ...
@@ -71,9 +62,9 @@ func (ls *LiveSession) InsertUser(document interface{}) (string, error) {
 }
 
 //ReadUser ...
-func (ls *LiveSession) ReadUser(filter string) (*Users, error) {
+func (ls *LiveSession) Read(filter string) (interface{}, error) {
 
-	var u *Users
+	var v interface{}
 
 	i, err := primitive.ObjectIDFromHex(filter)
 	if err != nil {
@@ -82,11 +73,11 @@ func (ls *LiveSession) ReadUser(filter string) (*Users, error) {
 
 	resp := ls.Collection.FindOne(context.Background(), bson.M{"_id": i})
 
-	if err := resp.Decode(&u); err != nil {
+	if err := resp.Decode(&v); err != nil {
 		return nil, err
 	}
 
-	return u, nil
+	return v, nil
 
 }
 
@@ -128,8 +119,8 @@ func (ls *LiveSession) UpdateUser(id string, b []byte) error {
 	panic(fmt.Errorf("UpdateUser method doesn't work, Check https://github.com/spaceCh1mp/pow/issues/8#issue-504882414 for the issue "))
 }
 
-//DeleteUser ...
-func (ls *LiveSession) DeleteUser(filter string) error {
+//Delete ...
+func (ls *LiveSession) Delete(filter string) error {
 
 	i, err := primitive.ObjectIDFromHex(filter)
 	if err != nil {
@@ -150,15 +141,19 @@ func (ls *LiveSession) DeleteUser(filter string) error {
 
 //Transactions model
 type Transactions struct {
-	Date   string `json:"log" bson:"log"` // change to time stamp
-	Amount uint   `json:"amount" bson:"amount"`
+	ID     *primitive.ObjectID `json:"id,omitempty" bson:"_id"`
+	UserID string              `json: "userid" bson:"user_id"`
+	Date   string              `json:"log" bson:"log"` // change to time stamp
+	Amount uint                `json:"amount" bson:"amount"`
 }
 
 //Family model
 type Family struct {
-	Name        string   `json:"name" bson:"name"`
-	OrganiserID string   `json:"organiser_id" bson:"organiser_id"`
-	MembersID   []string `json:"members_id" bson:"members_id"`
+	ID          *primitive.ObjectID `json:"id,omitempty" bson:"_id"`
+	Name        string              `json:"name" bson:"name"`
+	Rate        float64             `json:"rate" bson:"rate"`
+	OrganiserID string              `json:"orgID" bson:"organiser_id"`
+	MembersID   []string            `json:"memID,omitempty" bson:"members_id"`
 }
 
 //Connect makes a new connection with the database
@@ -200,8 +195,9 @@ func (ls *LiveSession) Disconnect() error {
 //SetCollection sets the name of the collection to be queried
 //it returns an error if the client is been disconnected
 func (ls *LiveSession) SetCollection(cName string) error {
-	if ls.Client == nil {
-		return mongo.ErrClientDisconnected
+	if err := ls.Connect(); err != nil {
+		//TODO handle error
+		return err
 	}
 
 	ls.Collection = ls.Client.Database(name).Collection(cName)
