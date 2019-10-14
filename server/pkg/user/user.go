@@ -7,6 +7,8 @@ import (
 	"log"
 	"net"
 
+	"go.mongodb.org/mongo-driver/bson"
+
 	v1 "github.com/spaceCh1mp/pow/server/api/proto/v1"
 	db "github.com/spaceCh1mp/pow/server/db"
 	grpc "google.golang.org/grpc"
@@ -15,10 +17,16 @@ import (
 type usersServer struct {
 }
 
+var (
+	errMsg = fmt.Errorf("Not Implemented this method yet")
+	pool   db.MongoDB
+)
+
 //Config initialises the service
-func Config() error {
+func Config() {
 	s := grpc.NewServer()
 	var user usersServer
+
 	v1.RegisterUsersServer(s, user)
 	l, err := net.Listen("tcp", ":9090")
 	if err != nil {
@@ -27,18 +35,8 @@ func Config() error {
 
 	pool = &db.LiveSession{}
 
-	if err := pool.Connect(); err != nil {
-		//handle connection error
-	}
-
-	log.Printf("started listening on %v", l.Addr())
-	return fmt.Errorf("%v", s.Serve(l))
+	log.Printf("User: %v \n", s.Serve(l))
 }
-
-var (
-	errMsg = fmt.Errorf("Not Implemented this method yet")
-	pool   db.MongoDB
-)
 
 func isEmpty(v interface{}) bool {
 	switch i := v.(type) {
@@ -117,16 +115,28 @@ func (v usersServer) Read(c context.Context, id *v1.ID) (*v1.ReadUser, error) {
 		return nil, err
 	}
 
-	r, err := pool.ReadUser(id.Id)
+	r, err := pool.Read(id.GetId())
 	if err != nil {
 		//if there's no response
 		//if there's an err from the operation
 		return nil, err
 	}
+
+	b, err := bson.Marshal(r)
+	if err != nil {
+		return nil, err
+	}
+
+	var z v1.NewUser
+	err = bson.Unmarshal(b, &z)
+	if err != nil {
+		return nil, err
+	}
+
 	return &v1.ReadUser{
-		Name:     r.FirstName,
-		Username: r.LastName,
-		Email:    r.Email,
+		Name:     z.GetFirstName(),
+		Email:    z.GetEmail(),
+		Username: z.GetLastName(),
 	}, nil
 }
 
@@ -162,7 +172,7 @@ func (v usersServer) Delete(c context.Context, id *v1.ID) (*v1.Result, error) {
 		return nil, e
 	}
 
-	err := pool.DeleteUser(id.Id)
+	err := pool.Delete(id.GetId())
 	if err != nil {
 		return &v1.Result{Status: false}, nil
 	}

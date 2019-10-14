@@ -22,8 +22,8 @@ func (ms MockSession) InsertUser(document interface{}) (string, error) {
 
 }
 
-//ReadUser ...
-func (ms MockSession) ReadUser(filter string) (*Users, error) {
+//Read ...
+func (ms MockSession) Read(filter string) (interface{}, error) {
 
 	//dummy reply for when the Find operation fails
 	//possible cause would be a wrong ObjectId
@@ -39,13 +39,27 @@ func (ms MockSession) ReadUser(filter string) (*Users, error) {
 	}
 
 	//If everything goes well
-	return &Users{
+	// return &Users{
+	// 	FamilyID:  "",
+	// 	FirstName: "kene",
+	// 	LastName:  "agugua",
+	// 	UserName:  "spaceCh1mp",
+	// 	Email:     "Kenechukwuagugua@gmail.com",
+	// }, nil
+	b, err := json.Marshal(&Users{
 		FamilyID:  "",
 		FirstName: "kene",
 		LastName:  "agugua",
 		UserName:  "spaceCh1mp",
 		Email:     "Kenechukwuagugua@gmail.com",
-	}, nil
+	})
+
+	if err != nil {
+		return nil, err
+	}
+
+	return b, nil
+
 }
 
 func updateParams(b []byte) interface{} {
@@ -67,8 +81,8 @@ func (ms MockSession) UpdateUser(id string, b []byte) error {
 	return nil
 }
 
-//DeleteUser ...
-func (ms MockSession) DeleteUser(filter string) error {
+//Delete ...
+func (ms MockSession) Delete(filter string) error {
 	//dummy reply for when the Delete operation fails.
 	//possible cause would be an invalid ObjectId
 	err := valid(filter)

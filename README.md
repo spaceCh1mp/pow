@@ -1,6 +1,6 @@
-# Project Title
+# Pow
 
-coming soon
+This project handles membership subscription details for .
 <!-- One Paragraph of project description goes here -->
 
 ## Getting Started

@@ -17,13 +17,15 @@ func main() {
 	}
 
 	//define services to run
-	services := []func() error{
+	services := []func(){
 		user.Config,
 	}
 
+	var ports = 9090
 	//run services on seperate threads
 	for _, v := range services {
 		go v()
+		ports++
 	}
 
 	//register router
