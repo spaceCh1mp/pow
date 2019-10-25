@@ -5,9 +5,10 @@ import (
 	"fmt"
 	"log"
 
+	context "golang.org/x/net/context"
+
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
-	context "golang.org/x/net/context"
 
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
@@ -84,39 +85,38 @@ func (ls *LiveSession) Read(filter string) (interface{}, error) {
 //UpdateUser Doesn't work check https://github.com/spaceCh1mp/pow/issues/8#issue-504882414 for the issue
 func (ls *LiveSession) UpdateUser(id string, b []byte) error {
 
-	// i, err := primitive.ObjectIDFromHex(id)
-	// if err != nil {
-	// 	return err
-	// }
+	i, err := primitive.ObjectIDFromHex(id)
+	if err != nil {
+		return err
+	}
 
-	// log.Println("cow")
-	// var update interface{}
-	// err = bson.UnmarshalExtJSON(b, false, &update)
-	// if err != nil {
-	// 	return err
-	// }
+	log.Println("cow")
+	var update interface{}
+	err = bson.UnmarshalExtJSON(b, false, &update)
+	if err != nil {
+		return err
+	}
 
-	// filter := bson.M{
-	// 	"_id": bson.M{
-	// 		"$eq": i, // check if bool field has value of 'false'
-	// 	},
-	// }
-	// updat := bson.M{
-	// 	"$set": bson.M{
-	// 	},
-	// }
-	// log.Println("cow")
-	// _, err = ls.Collection.UpdateOne(context.Background(), filter, updat) //problem
+	filter := bson.M{
+		"_id": bson.M{
+			"$eq": i, // check if bool field has value of 'false'
+		},
+	}
+	updat := bson.M{
+		"$set": bson.M{},
+	}
+	log.Println("cow")
+	_, err = ls.Collection.UpdateOne(context.Background(), filter, updat) //problem
 
-	// log.Println("cow")
+	log.Println("cow")
 
-	// if err != nil {
-	// 	return err
-	// }
+	if err != nil {
+		return err
+	}
 
-	// return nil
+	return nil
 
-	panic(fmt.Errorf("UpdateUser method doesn't work, Check https://github.com/spaceCh1mp/pow/issues/8#issue-504882414 for the issue "))
+	// panic(fmt.Errorf("UpdateUser method doesn't work, Check https://github.com/spaceCh1mp/pow/issues/8#issue-504882414 for the issue "))
 }
 
 //Delete ...
@@ -142,7 +142,7 @@ func (ls *LiveSession) Delete(filter string) error {
 //Transactions model
 type Transactions struct {
 	ID     *primitive.ObjectID `json:"id,omitempty" bson:"_id"`
-	UserID string              `json: "userid" bson:"user_id"`
+	UserID string              `json:"userid" bson:"user_id"`
 	Date   string              `json:"log" bson:"log"` // change to time stamp
 	Amount uint                `json:"amount" bson:"amount"`
 }

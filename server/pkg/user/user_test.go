@@ -3,15 +3,13 @@ package user
 import (
 	"testing"
 
-	"go.mongodb.org/mongo-driver/mongo"
-
-	"go.mongodb.org/mongo-driver/bson/primitive"
-
-	"github.com/spaceCh1mp/pow/server/db"
-
 	context "golang.org/x/net/context"
 
+	"go.mongodb.org/mongo-driver/bson/primitive"
+	"go.mongodb.org/mongo-driver/mongo"
+
 	v1 "github.com/spaceCh1mp/pow/server/api/proto/v1"
+	"github.com/spaceCh1mp/pow/server/db"
 )
 
 //global interface for usersServer
@@ -24,42 +22,42 @@ func TestCreate(t *testing.T) {
 	// test table containing test cases for the create user method
 	tt := []struct {
 		name string
-		tc   *v1.NewUser
+		tc   *v1.User
 		err  error
 	}{
-		{"Ok", &v1.NewUser{
+		{"Ok", &v1.User{
 			FirstName: "Kenechukwu",
 			LastName:  "Agugua",
 			Email:     "Kenechukwuagugua@gmail.com",
 			Password:  "123455788",
 		},
 			nil},
-		{"No FirstName", &v1.NewUser{
+		{"No FirstName", &v1.User{
 			LastName: "Agugua",
 			Email:    "Kenechukwuagugua@gmail.com",
 			Password: "123455788",
 		},
 			errMF},
-		{"No LastName", &v1.NewUser{
+		{"No LastName", &v1.User{
 			FirstName: "Kenechukwu",
 			Email:     "Kenechukwuagugua@gmail.com",
 			Password:  "123455788",
 		},
 			errML},
-		{"No Password", &v1.NewUser{
+		{"No Password", &v1.User{
 			FirstName: "Kenechukwu",
 			LastName:  "Agugua",
 			Email:     "Kenechukwuagugua@gmail.com",
 		},
 			errMP},
-		{"No Email", &v1.NewUser{
+		{"No Email", &v1.User{
 			FirstName: "Kenechukwu",
 			LastName:  "Agugua",
 			Password:  "123455788",
 		},
 			errME},
-		{"No value", &v1.NewUser{}, errED},
-		{"Failed to Set Collection", &v1.NewUser{
+		{"No value", &v1.User{}, errED},
+		{"Failed to Set Collection", &v1.User{
 			FirstName: "Kenechukwu",
 			LastName:  "Agugua",
 			Email:     "Keneca@gmail.com",

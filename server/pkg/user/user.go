@@ -68,22 +68,25 @@ func collection(str string) error {
 }
 
 //Implement gRPC crud methods.
-func (v usersServer) Create(c context.Context, newUser *v1.NewUser) (*v1.ID, error) {
+func (v usersServer) Create(c context.Context, u *v1.User) (*v1.ID, error) {
 	//validate input data
 	err := func() error {
-		if (*newUser == v1.NewUser{} || newUser == nil) {
+		if (*u == v1.User{} || u == nil) {
 			return errED
 		}
-		if isEmpty(newUser.FirstName) {
+		if isEmpty(u.GetFirstName()) {
 			return errMF
 		}
-		if isEmpty(newUser.LastName) {
+		if isEmpty(u.GetLastName()) {
 			return errML
 		}
-		if isEmpty(newUser.Email) {
+		if isEmpty(u.GetUserName()) {
+			return fmt.Errorf("UserName field empty")
+		}
+		if isEmpty(u.GetEmail()) {
 			return errME
 		}
-		if isEmpty(newUser.Password) {
+		if isEmpty(u.GetPassword()) {
 			return errMP
 		}
 		return nil
@@ -98,7 +101,7 @@ func (v usersServer) Create(c context.Context, newUser *v1.NewUser) (*v1.ID, err
 	}
 
 	//make query
-	resp, err := pool.InsertUser(newUser)
+	resp, err := pool.InsertUser(u)
 	if err != nil {
 		return nil, err
 	}
@@ -127,21 +130,17 @@ func (v usersServer) Read(c context.Context, id *v1.ID) (*v1.ReadUser, error) {
 		return nil, err
 	}
 
-	var z v1.NewUser
+	var z v1.User
 	err = bson.Unmarshal(b, &z)
 	if err != nil {
 		return nil, err
 	}
 
 	return &v1.ReadUser{
-		Name:     z.GetFirstName(),
-		Email:    z.GetEmail(),
-		Username: z.GetLastName(),
+		FirstName: z.GetFirstName(),
+		Email:     z.GetEmail(),
+		UserName:  z.GetUserName(),
 	}, nil
-}
-
-func (v usersServer) ReadLog(c context.Context, id *v1.ID) (*v1.ReadUserLog, error) {
-	return &v1.ReadUserLog{}, errMsg
 }
 
 func (v usersServer) Update(c context.Context, u *v1.UpdateUser) (*v1.Result, error) {

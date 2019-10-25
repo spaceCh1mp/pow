@@ -27,6 +27,11 @@ import proto "github.com/golang/protobuf/proto"
 import fmt "fmt"
 import math "math"
 
+import (
+	context "golang.org/x/net/context"
+	grpc "google.golang.org/grpc"
+)
+
 // Reference imports to suppress errors if they are not otherwise used.
 var _ = proto.Marshal
 var _ = fmt.Errorf
@@ -480,6 +485,511 @@ func init() {
 	proto.RegisterType((*GroupMember)(nil), "v1.GroupMember")
 	proto.RegisterType((*NewTransaction)(nil), "v1.NewTransaction")
 	proto.RegisterType((*Transaction)(nil), "v1.Transaction")
+}
+
+// Reference imports to suppress errors if they are not otherwise used.
+var _ context.Context
+var _ grpc.ClientConn
+
+// This is a compile-time assertion to ensure that this generated file
+// is compatible with the grpc package it is being compiled against.
+const _ = grpc.SupportPackageIsVersion4
+
+// Client API for Users service
+
+type UsersClient interface {
+	// create new user
+	Create(ctx context.Context, in *User, opts ...grpc.CallOption) (*ID, error)
+	// read user data
+	Read(ctx context.Context, in *ID, opts ...grpc.CallOption) (*ReadUser, error)
+	// update user data (logs included)
+	Update(ctx context.Context, in *UpdateUser, opts ...grpc.CallOption) (*Result, error)
+	// delete user
+	Delete(ctx context.Context, in *ID, opts ...grpc.CallOption) (*Result, error)
+}
+
+type usersClient struct {
+	cc *grpc.ClientConn
+}
+
+func NewUsersClient(cc *grpc.ClientConn) UsersClient {
+	return &usersClient{cc}
+}
+
+func (c *usersClient) Create(ctx context.Context, in *User, opts ...grpc.CallOption) (*ID, error) {
+	out := new(ID)
+	err := grpc.Invoke(ctx, "/v1.Users/Create", in, out, c.cc, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *usersClient) Read(ctx context.Context, in *ID, opts ...grpc.CallOption) (*ReadUser, error) {
+	out := new(ReadUser)
+	err := grpc.Invoke(ctx, "/v1.Users/Read", in, out, c.cc, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *usersClient) Update(ctx context.Context, in *UpdateUser, opts ...grpc.CallOption) (*Result, error) {
+	out := new(Result)
+	err := grpc.Invoke(ctx, "/v1.Users/Update", in, out, c.cc, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *usersClient) Delete(ctx context.Context, in *ID, opts ...grpc.CallOption) (*Result, error) {
+	out := new(Result)
+	err := grpc.Invoke(ctx, "/v1.Users/Delete", in, out, c.cc, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+// Server API for Users service
+
+type UsersServer interface {
+	// create new user
+	Create(context.Context, *User) (*ID, error)
+	// read user data
+	Read(context.Context, *ID) (*ReadUser, error)
+	// update user data (logs included)
+	Update(context.Context, *UpdateUser) (*Result, error)
+	// delete user
+	Delete(context.Context, *ID) (*Result, error)
+}
+
+func RegisterUsersServer(s *grpc.Server, srv UsersServer) {
+	s.RegisterService(&_Users_serviceDesc, srv)
+}
+
+func _Users_Create_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(User)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(UsersServer).Create(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/v1.Users/Create",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(UsersServer).Create(ctx, req.(*User))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Users_Read_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ID)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(UsersServer).Read(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/v1.Users/Read",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(UsersServer).Read(ctx, req.(*ID))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Users_Update_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(UpdateUser)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(UsersServer).Update(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/v1.Users/Update",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(UsersServer).Update(ctx, req.(*UpdateUser))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Users_Delete_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ID)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(UsersServer).Delete(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/v1.Users/Delete",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(UsersServer).Delete(ctx, req.(*ID))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+var _Users_serviceDesc = grpc.ServiceDesc{
+	ServiceName: "v1.Users",
+	HandlerType: (*UsersServer)(nil),
+	Methods: []grpc.MethodDesc{
+		{
+			MethodName: "Create",
+			Handler:    _Users_Create_Handler,
+		},
+		{
+			MethodName: "Read",
+			Handler:    _Users_Read_Handler,
+		},
+		{
+			MethodName: "Update",
+			Handler:    _Users_Update_Handler,
+		},
+		{
+			MethodName: "Delete",
+			Handler:    _Users_Delete_Handler,
+		},
+	},
+	Streams:  []grpc.StreamDesc{},
+	Metadata: "api.proto",
+}
+
+// Client API for Groups service
+
+type GroupsClient interface {
+	Create(ctx context.Context, in *NewGroup, opts ...grpc.CallOption) (*ID, error)
+	Read(ctx context.Context, in *ID, opts ...grpc.CallOption) (*Group, error)
+	ReadGroupOrganiser(ctx context.Context, in *ID, opts ...grpc.CallOption) (*ReadUser, error)
+	Update(ctx context.Context, in *UpdateGroup, opts ...grpc.CallOption) (*Result, error)
+	UpdateMember(ctx context.Context, in *GroupMember, opts ...grpc.CallOption) (*Result, error)
+	Delete(ctx context.Context, in *ID, opts ...grpc.CallOption) (*Result, error)
+}
+
+type groupsClient struct {
+	cc *grpc.ClientConn
+}
+
+func NewGroupsClient(cc *grpc.ClientConn) GroupsClient {
+	return &groupsClient{cc}
+}
+
+func (c *groupsClient) Create(ctx context.Context, in *NewGroup, opts ...grpc.CallOption) (*ID, error) {
+	out := new(ID)
+	err := grpc.Invoke(ctx, "/v1.Groups/Create", in, out, c.cc, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *groupsClient) Read(ctx context.Context, in *ID, opts ...grpc.CallOption) (*Group, error) {
+	out := new(Group)
+	err := grpc.Invoke(ctx, "/v1.Groups/Read", in, out, c.cc, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *groupsClient) ReadGroupOrganiser(ctx context.Context, in *ID, opts ...grpc.CallOption) (*ReadUser, error) {
+	out := new(ReadUser)
+	err := grpc.Invoke(ctx, "/v1.Groups/ReadGroupOrganiser", in, out, c.cc, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *groupsClient) Update(ctx context.Context, in *UpdateGroup, opts ...grpc.CallOption) (*Result, error) {
+	out := new(Result)
+	err := grpc.Invoke(ctx, "/v1.Groups/Update", in, out, c.cc, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *groupsClient) UpdateMember(ctx context.Context, in *GroupMember, opts ...grpc.CallOption) (*Result, error) {
+	out := new(Result)
+	err := grpc.Invoke(ctx, "/v1.Groups/UpdateMember", in, out, c.cc, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *groupsClient) Delete(ctx context.Context, in *ID, opts ...grpc.CallOption) (*Result, error) {
+	out := new(Result)
+	err := grpc.Invoke(ctx, "/v1.Groups/Delete", in, out, c.cc, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+// Server API for Groups service
+
+type GroupsServer interface {
+	Create(context.Context, *NewGroup) (*ID, error)
+	Read(context.Context, *ID) (*Group, error)
+	ReadGroupOrganiser(context.Context, *ID) (*ReadUser, error)
+	Update(context.Context, *UpdateGroup) (*Result, error)
+	UpdateMember(context.Context, *GroupMember) (*Result, error)
+	Delete(context.Context, *ID) (*Result, error)
+}
+
+func RegisterGroupsServer(s *grpc.Server, srv GroupsServer) {
+	s.RegisterService(&_Groups_serviceDesc, srv)
+}
+
+func _Groups_Create_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(NewGroup)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(GroupsServer).Create(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/v1.Groups/Create",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(GroupsServer).Create(ctx, req.(*NewGroup))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Groups_Read_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ID)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(GroupsServer).Read(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/v1.Groups/Read",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(GroupsServer).Read(ctx, req.(*ID))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Groups_ReadGroupOrganiser_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ID)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(GroupsServer).ReadGroupOrganiser(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/v1.Groups/ReadGroupOrganiser",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(GroupsServer).ReadGroupOrganiser(ctx, req.(*ID))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Groups_Update_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(UpdateGroup)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(GroupsServer).Update(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/v1.Groups/Update",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(GroupsServer).Update(ctx, req.(*UpdateGroup))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Groups_UpdateMember_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GroupMember)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(GroupsServer).UpdateMember(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/v1.Groups/UpdateMember",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(GroupsServer).UpdateMember(ctx, req.(*GroupMember))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Groups_Delete_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ID)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(GroupsServer).Delete(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/v1.Groups/Delete",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(GroupsServer).Delete(ctx, req.(*ID))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+var _Groups_serviceDesc = grpc.ServiceDesc{
+	ServiceName: "v1.Groups",
+	HandlerType: (*GroupsServer)(nil),
+	Methods: []grpc.MethodDesc{
+		{
+			MethodName: "Create",
+			Handler:    _Groups_Create_Handler,
+		},
+		{
+			MethodName: "Read",
+			Handler:    _Groups_Read_Handler,
+		},
+		{
+			MethodName: "ReadGroupOrganiser",
+			Handler:    _Groups_ReadGroupOrganiser_Handler,
+		},
+		{
+			MethodName: "Update",
+			Handler:    _Groups_Update_Handler,
+		},
+		{
+			MethodName: "UpdateMember",
+			Handler:    _Groups_UpdateMember_Handler,
+		},
+		{
+			MethodName: "Delete",
+			Handler:    _Groups_Delete_Handler,
+		},
+	},
+	Streams:  []grpc.StreamDesc{},
+	Metadata: "api.proto",
+}
+
+// Client API for Transactions service
+
+type TransactionsClient interface {
+	Create(ctx context.Context, in *NewTransaction, opts ...grpc.CallOption) (*Transaction, error)
+	ReadTransaction(ctx context.Context, in *ID, opts ...grpc.CallOption) (*Transaction, error)
+}
+
+type transactionsClient struct {
+	cc *grpc.ClientConn
+}
+
+func NewTransactionsClient(cc *grpc.ClientConn) TransactionsClient {
+	return &transactionsClient{cc}
+}
+
+func (c *transactionsClient) Create(ctx context.Context, in *NewTransaction, opts ...grpc.CallOption) (*Transaction, error) {
+	out := new(Transaction)
+	err := grpc.Invoke(ctx, "/v1.Transactions/Create", in, out, c.cc, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *transactionsClient) ReadTransaction(ctx context.Context, in *ID, opts ...grpc.CallOption) (*Transaction, error) {
+	out := new(Transaction)
+	err := grpc.Invoke(ctx, "/v1.Transactions/ReadTransaction", in, out, c.cc, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+// Server API for Transactions service
+
+type TransactionsServer interface {
+	Create(context.Context, *NewTransaction) (*Transaction, error)
+	ReadTransaction(context.Context, *ID) (*Transaction, error)
+}
+
+func RegisterTransactionsServer(s *grpc.Server, srv TransactionsServer) {
+	s.RegisterService(&_Transactions_serviceDesc, srv)
+}
+
+func _Transactions_Create_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(NewTransaction)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(TransactionsServer).Create(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/v1.Transactions/Create",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(TransactionsServer).Create(ctx, req.(*NewTransaction))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Transactions_ReadTransaction_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ID)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(TransactionsServer).ReadTransaction(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/v1.Transactions/ReadTransaction",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(TransactionsServer).ReadTransaction(ctx, req.(*ID))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+var _Transactions_serviceDesc = grpc.ServiceDesc{
+	ServiceName: "v1.Transactions",
+	HandlerType: (*TransactionsServer)(nil),
+	Methods: []grpc.MethodDesc{
+		{
+			MethodName: "Create",
+			Handler:    _Transactions_Create_Handler,
+		},
+		{
+			MethodName: "ReadTransaction",
+			Handler:    _Transactions_ReadTransaction_Handler,
+		},
+	},
+	Streams:  []grpc.StreamDesc{},
+	Metadata: "api.proto",
 }
 
 func init() { proto.RegisterFile("api.proto", fileDescriptor0) }

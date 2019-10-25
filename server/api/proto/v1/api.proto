@@ -75,7 +75,7 @@ message Group{
 message UpdateGroup{
     string id = 1;
     string name = 2;
-    float rate = 3;
+    float  rate = 3;
     string orgID = 4;
 }
 
@@ -88,7 +88,7 @@ service Groups{
     rpc Create(NewGroup) returns(ID) {}
     
     rpc Read(ID) returns(Group) {}
-   rpc ReadGroupOrganiser(ID) returns(ReadUser) {}
+    rpc ReadGroupOrganiser(ID) returns(ReadUser) {}
     
     rpc Update(UpdateGroup) returns(Result) {}
     rpc UpdateMember(GroupMember) returns(Result) {}
