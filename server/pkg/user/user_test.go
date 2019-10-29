@@ -6,7 +6,6 @@ import (
 	context "golang.org/x/net/context"
 
 	"go.mongodb.org/mongo-driver/bson/primitive"
-	"go.mongodb.org/mongo-driver/mongo"
 
 	v1 "github.com/spaceCh1mp/pow/server/api/proto/v1"
 	"github.com/spaceCh1mp/pow/server/db"
@@ -28,24 +27,28 @@ func TestCreate(t *testing.T) {
 		{"Ok", &v1.User{
 			FirstName: "Kenechukwu",
 			LastName:  "Agugua",
+			UserName:  "space",
 			Email:     "Kenechukwuagugua@gmail.com",
 			Password:  "123455788",
 		},
 			nil},
 		{"No FirstName", &v1.User{
 			LastName: "Agugua",
+			UserName: "space",
 			Email:    "Kenechukwuagugua@gmail.com",
 			Password: "123455788",
 		},
 			errMF},
 		{"No LastName", &v1.User{
 			FirstName: "Kenechukwu",
+			UserName:  "space",
 			Email:     "Kenechukwuagugua@gmail.com",
 			Password:  "123455788",
 		},
 			errML},
 		{"No Password", &v1.User{
 			FirstName: "Kenechukwu",
+			UserName:  "space",
 			LastName:  "Agugua",
 			Email:     "Kenechukwuagugua@gmail.com",
 		},
@@ -53,13 +56,21 @@ func TestCreate(t *testing.T) {
 		{"No Email", &v1.User{
 			FirstName: "Kenechukwu",
 			LastName:  "Agugua",
+			UserName:  "space",
 			Password:  "123455788",
 		},
 			errME},
+		{"No Username", &v1.User{
+			FirstName: "Kenechukwu",
+			LastName:  "Agugua",
+			Password:  "123455788",
+		},
+			errUN},
 		{"No value", &v1.User{}, errED},
 		{"Failed to Set Collection", &v1.User{
 			FirstName: "Kenechukwu",
 			LastName:  "Agugua",
+			UserName:  "space",
 			Email:     "Keneca@gmail.com",
 			Password:  "123455788",
 		},
@@ -86,8 +97,6 @@ func TestRead(t *testing.T) {
 	//Define mockSession
 	pool = db.MockSession{C: true}
 
-	//reply
-	r := mongo.SingleResult{}
 	tt := []struct {
 		name string
 		in   *v1.ID
@@ -98,10 +107,10 @@ func TestRead(t *testing.T) {
 			nil,
 		}, {
 			"No Result", &v1.ID{Id: "4af9f070a466655aeb230cbd"},
-			mongo.ErrNoDocuments,
+			db.ErrNoMatchedDocument,
 		}, {
 			"Invalid ObjectId", &v1.ID{Id: "g17t3jfnkkjrik"},
-			r.Err(),
+			db.ErrInvalidHex,
 		}, {
 			"Failed to Set Collection", &v1.ID{Id: primitive.NewObjectID().Hex()},
 			errFC,
@@ -157,47 +166,6 @@ func TestDelete(t *testing.T) {
 			if err != v.out || resp.GetStatus() != v.res.GetStatus() {
 				t.Fatalf("Expected{\nresult:%v\nerr:%v\n}\n Got{\nresult:%v\nerr:%v\n}",
 					v.res.GetStatus(), v.out, resp.GetStatus(), err)
-			}
-		})
-	}
-}
-
-func TestUpdate(t *testing.T) {
-	//Define mockSession
-	pool = db.MockSession{C: true}
-
-	tt := []struct {
-		name   string
-		u      *v1.UpdateUser
-		status bool
-		err    error
-	}{
-		{"Ok", &v1.UpdateUser{
-			Id:        primitive.NewObjectID().Hex(),
-			FirstName: "Kenechukwu",
-			Email:     "Kenechukwuagugua@gmail.com",
-		},
-			true, nil},
-		{"No Id", &v1.UpdateUser{
-			FirstName: "Kenechukwu",
-			Email:     "Kenechukwuagugua@gmail.com",
-			Password:  "123455788",
-		},
-			false, errID},
-		{"Invalid ID", &v1.UpdateUser{
-			Id:        "ojmovm0emi3m03mic",
-			FirstName: "Kenechukwu",
-			Email:     "Kenechukwuagugua@gmail.com",
-		},
-			false, errID},
-	}
-
-	for _, v := range tt {
-		t.Run(v.name, func(t *testing.T) {
-			got, err := usersServerTest.Update(context.Background(), v.u)
-			if err != v.err || got.Status != v.status {
-				t.Fatalf("Expected{\nresult:%v\nerr:%v\n}\n Got{\nresult:%v\nerr:%v\n}",
-					v.status, v.err, got.GetStatus(), err)
 			}
 		})
 	}

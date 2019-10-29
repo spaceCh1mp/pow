@@ -1,7 +1,7 @@
 package db
 
 import (
-	"errors"
+	"encoding/json"
 	"fmt"
 	"log"
 
@@ -9,24 +9,59 @@ import (
 
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
-
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 const name = "pow"
 
-//Users model
-type Users struct {
-	ID       *primitive.ObjectID `json:"id,omitempty" bson:"_id"`
-	FamilyID string              `json:"familyID,omitempty" bson:"family_id"`
+func parse(b []byte, opt string) (interface{}, bson.D, error) {
 
-	FirstName string `json:"firstName,omitempty" bson:"firstname"`
-	LastName  string `json:"lastName,omitempty" bson:"lastname"`
-	UserName  string `json:"userName,omitempty" bson:"username"`
+	var (
+		m       map[string]string
+		bsonMap bson.D
+		i       interface{}
+	)
 
-	Email    string `json:"email,omitempty" bson:"email"`
-	Password string `json:"password,omitempty" bson:"password"`
+	//unmarshal data to map (m)
+	//return err if operation fails
+	err := json.Unmarshal(b, &m)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	//Loop through map
+	for k, v := range m {
+
+		i = v
+
+		//get Document ID
+		//return err if there was a problem converting the string to an ObjectId type
+		if k == "id" {
+
+			i, err = primitive.ObjectIDFromHex(string(v))
+			if err != nil {
+				return nil, nil, ErrInvalidHex
+			}
+
+			//check opt to know what operation called parse
+			// continue if it's the update operation
+			//set key to "_id" if it's the read operation.
+			if opt == "u" {
+				continue
+			} else if opt == "r" {
+				k = "_id"
+			}
+
+		}
+
+		//add entries
+		bsonMap = append(bsonMap, bson.E{Key: k, Value: i})
+
+	}
+
+	return i, bsonMap, nil
+
 }
 
 //MongoDB implements methods for either a live or mock session
@@ -36,9 +71,9 @@ type MongoDB interface {
 
 	SetCollection(string) error
 
-	InsertUser(interface{}) (string, error)
-	Read(string) (interface{}, error)
-	UpdateUser(string, []byte) error
+	Insert(interface{}) (string, error)
+	Read([]byte) (interface{}, error)
+	Update([]byte) error
 	Delete(string) error
 }
 
@@ -47,113 +82,6 @@ type MongoDB interface {
 type LiveSession struct {
 	Client     *mongo.Client
 	Collection *mongo.Collection
-}
-
-//InsertUser ...
-func (ls *LiveSession) InsertUser(document interface{}) (string, error) {
-
-	resp, err := ls.Collection.InsertOne(context.Background(), document)
-	if err != nil {
-		return "", err
-	}
-
-	r := resp.InsertedID.(primitive.ObjectID)
-	return r.Hex(), nil
-
-}
-
-//ReadUser ...
-func (ls *LiveSession) Read(filter string) (interface{}, error) {
-
-	var v interface{}
-
-	i, err := primitive.ObjectIDFromHex(filter)
-	if err != nil {
-		return nil, err
-	}
-
-	resp := ls.Collection.FindOne(context.Background(), bson.M{"_id": i})
-
-	if err := resp.Decode(&v); err != nil {
-		return nil, err
-	}
-
-	return v, nil
-
-}
-
-//UpdateUser Doesn't work check https://github.com/spaceCh1mp/pow/issues/8#issue-504882414 for the issue
-func (ls *LiveSession) UpdateUser(id string, b []byte) error {
-
-	i, err := primitive.ObjectIDFromHex(id)
-	if err != nil {
-		return err
-	}
-
-	log.Println("cow")
-	var update interface{}
-	err = bson.UnmarshalExtJSON(b, false, &update)
-	if err != nil {
-		return err
-	}
-
-	filter := bson.M{
-		"_id": bson.M{
-			"$eq": i, // check if bool field has value of 'false'
-		},
-	}
-	updat := bson.M{
-		"$set": bson.M{},
-	}
-	log.Println("cow")
-	_, err = ls.Collection.UpdateOne(context.Background(), filter, updat) //problem
-
-	log.Println("cow")
-
-	if err != nil {
-		return err
-	}
-
-	return nil
-
-	// panic(fmt.Errorf("UpdateUser method doesn't work, Check https://github.com/spaceCh1mp/pow/issues/8#issue-504882414 for the issue "))
-}
-
-//Delete ...
-func (ls *LiveSession) Delete(filter string) error {
-
-	i, err := primitive.ObjectIDFromHex(filter)
-	if err != nil {
-		return err
-	}
-
-	resp, err := ls.Collection.DeleteOne(context.TODO(), bson.M{"_id": i})
-	if err != nil {
-		return err
-	}
-
-	if resp.DeletedCount < int64(1) {
-		return errors.New("")
-	}
-
-	return nil
-}
-
-//Transactions model
-type Transactions struct {
-	ID     *primitive.ObjectID `json:"id,omitempty" bson:"_id"`
-	UserID string              `json:"userid" bson:"user_id"`
-	Date   string              `json:"log" bson:"log"` // change to time stamp
-	Amount uint                `json:"amount" bson:"amount"`
-}
-
-//Family model
-type Family struct {
-	ID          *primitive.ObjectID `json:"id,omitempty" bson:"_id"`
-	Name        string              `json:"name" bson:"name"`
-	Rate        float64             `json:"rate" bson:"rate"`
-	OrganiserID string              `json:"orgID" bson:"organiser_id"`
-	MembersID   []string            `json:"memID,omitempty" bson:"members_id"`
 }
 
 //Connect makes a new connection with the database
@@ -201,5 +129,33 @@ func (ls *LiveSession) SetCollection(cName string) error {
 	}
 
 	ls.Collection = ls.Client.Database(name).Collection(cName)
+	return nil
+}
+
+//MockSession mocks the instance of the mongo server
+// and dummies a response similar to a live one
+type MockSession struct {
+	C bool
+}
+
+//Connect Does nothing
+func (ms MockSession) Connect() error {
+
+	if !ms.C {
+		var c = mongo.Client{}
+		return c.Ping(context.TODO(), nil)
+	}
+	return nil
+}
+
+//Disconnect equally Does nothing
+func (ms MockSession) Disconnect() error { return nil }
+
+//SetCollection is the worst cause it takes an argument and literally does nothing with it,
+// please stop bugging me
+func (ms MockSession) SetCollection(string) error {
+	if !ms.C {
+		return mongo.ErrClientDisconnected
+	}
 	return nil
 }

@@ -22,22 +22,6 @@ var (
 	pool   db.MongoDB
 )
 
-//Config initialises the service
-func Config() {
-	s := grpc.NewServer()
-	var user usersServer
-
-	v1.RegisterUsersServer(s, user)
-	l, err := net.Listen("tcp", ":9090")
-	if err != nil {
-		log.Fatalf("Couldn't listen on port. %v", err)
-	}
-
-	pool = &db.LiveSession{}
-
-	log.Printf("User: %v \n", s.Serve(l))
-}
-
 func isEmpty(v interface{}) bool {
 	switch i := v.(type) {
 	case string:
@@ -67,6 +51,22 @@ func collection(str string) error {
 	return nil
 }
 
+//Config initialises the service
+func Config() {
+	s := grpc.NewServer()
+	var user usersServer
+
+	v1.RegisterUsersServer(s, user)
+	l, err := net.Listen("tcp", ":9092")
+	if err != nil {
+		log.Fatalf("Couldn't listen on port. %v", err)
+	}
+
+	pool = &db.LiveSession{}
+
+	log.Printf("User: %v \n", s.Serve(l))
+}
+
 //Implement gRPC crud methods.
 func (v usersServer) Create(c context.Context, u *v1.User) (*v1.ID, error) {
 	//validate input data
@@ -81,7 +81,7 @@ func (v usersServer) Create(c context.Context, u *v1.User) (*v1.ID, error) {
 			return errML
 		}
 		if isEmpty(u.GetUserName()) {
-			return fmt.Errorf("UserName field empty")
+			return errUN
 		}
 		if isEmpty(u.GetEmail()) {
 			return errME
@@ -101,7 +101,7 @@ func (v usersServer) Create(c context.Context, u *v1.User) (*v1.ID, error) {
 	}
 
 	//make query
-	resp, err := pool.InsertUser(u)
+	resp, err := pool.Insert(u)
 	if err != nil {
 		return nil, err
 	}
@@ -118,24 +118,32 @@ func (v usersServer) Read(c context.Context, id *v1.ID) (*v1.ReadUser, error) {
 		return nil, err
 	}
 
-	r, err := pool.Read(id.GetId())
+	b, err := json.Marshal(id)
+	if err != nil {
+		return nil, err
+	}
+
+	r, err := pool.Read(b)
 	if err != nil {
 		//if there's no response
 		//if there's an err from the operation
 		return nil, err
 	}
 
-	b, err := bson.Marshal(r)
+	log.Println("stuffuse1")
+	b, err = bson.Marshal(r)
 	if err != nil {
 		return nil, err
 	}
 
+	log.Println("stuffuse2")
 	var z v1.User
 	err = bson.Unmarshal(b, &z)
 	if err != nil {
 		return nil, err
 	}
 
+	log.Println("stuffuse3")
 	return &v1.ReadUser{
 		FirstName: z.GetFirstName(),
 		Email:     z.GetEmail(),
@@ -144,19 +152,24 @@ func (v usersServer) Read(c context.Context, id *v1.ID) (*v1.ReadUser, error) {
 }
 
 func (v usersServer) Update(c context.Context, u *v1.UpdateUser) (*v1.Result, error) {
-	id := u.GetId()
-	u.Id = "" //empty the userId
+
+	e := collection("user")
+
+	if e != nil {
+		return nil, e
+	}
 
 	b, err := json.Marshal(u)
 	if err != nil {
 		return nil, err
 	}
 
-	err = pool.UpdateUser(id, b)
+	err = pool.Update(b)
 	if err != nil {
 		return nil, err
 	}
 
+	log.Println("hetr5")
 	return &v1.Result{
 		Status: true,
 	}, nil
