@@ -60,7 +60,7 @@ func parse(b []byte, opt string) (interface{}, bson.D, error) {
 
 	}
 
-	return i, bsonMap, nil
+	return m["id"], bsonMap, nil
 
 }
 

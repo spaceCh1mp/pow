@@ -25,13 +25,12 @@ func main() {
 	// 	Password:  "KEnrujivm",
 	// })
 
-	// r, err := c.Update(context.Background(), &v1.UpdateUser{
-	// 	Id:        "5db7437d8fc0d3cfd36b14cd",
-	// 	FirstName: "Street",
-	// 	Cow:       "great",
-	// })
+	r, err := c.Update(context.Background(), &v1.UpdateUser{
+		Id:        "5db7437d8fc0d3cfd36b14cd",
+		FirstName: "Hadouken",
+	})
 
-	r, err := c.Read(context.TODO(), &v1.ID{Id: "5db7437d8fc0d3cfd36b14cd"})
+	// r, err := c.Read(context.TODO(), &v1.ID{Id: "5db7437d8fc0d3cfd36b14cd"})
 
 	if err != nil {
 		log.Println(err)

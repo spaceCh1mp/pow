@@ -13,7 +13,12 @@ func parseUpdate(b []byte) (*primitive.ObjectID, bson.D, error) {
 
 	i, bm, err := parse(b, "u")
 
-	return i.(*primitive.ObjectID), bm, err
+	id, err := primitive.ObjectIDFromHex(i.(string))
+	if err != nil {
+		return nil, nil, err
+	}
+
+	return &id, bm, err
 
 }
 

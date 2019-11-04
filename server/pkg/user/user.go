@@ -63,6 +63,11 @@ func Config() {
 	}
 
 	pool = &db.LiveSession{}
+	//set collection to query
+	if err = collection("user"); err != nil {
+		return
+	}
+	defer pool.Disconnect()
 
 	log.Printf("User: %v \n", s.Serve(l))
 }
@@ -95,11 +100,6 @@ func (v usersServer) Create(c context.Context, u *v1.User) (*v1.ID, error) {
 		return nil, err
 	}
 
-	//set collection to query
-	if err := collection("user"); err != nil {
-		return nil, err
-	}
-
 	//make query
 	resp, err := pool.Insert(u)
 	if err != nil {
@@ -113,11 +113,6 @@ func (v usersServer) Create(c context.Context, u *v1.User) (*v1.ID, error) {
 
 func (v usersServer) Read(c context.Context, id *v1.ID) (*v1.ReadUser, error) {
 
-	err := collection("user")
-	if err != nil {
-		return nil, err
-	}
-
 	b, err := json.Marshal(id)
 	if err != nil {
 		return nil, err
@@ -130,20 +125,17 @@ func (v usersServer) Read(c context.Context, id *v1.ID) (*v1.ReadUser, error) {
 		return nil, err
 	}
 
-	log.Println("stuffuse1")
 	b, err = bson.Marshal(r)
 	if err != nil {
 		return nil, err
 	}
 
-	log.Println("stuffuse2")
 	var z v1.User
 	err = bson.Unmarshal(b, &z)
 	if err != nil {
 		return nil, err
 	}
 
-	log.Println("stuffuse3")
 	return &v1.ReadUser{
 		FirstName: z.GetFirstName(),
 		Email:     z.GetEmail(),
@@ -152,12 +144,6 @@ func (v usersServer) Read(c context.Context, id *v1.ID) (*v1.ReadUser, error) {
 }
 
 func (v usersServer) Update(c context.Context, u *v1.UpdateUser) (*v1.Result, error) {
-
-	e := collection("user")
-
-	if e != nil {
-		return nil, e
-	}
 
 	b, err := json.Marshal(u)
 	if err != nil {
@@ -169,7 +155,6 @@ func (v usersServer) Update(c context.Context, u *v1.UpdateUser) (*v1.Result, er
 		return nil, err
 	}
 
-	log.Println("hetr5")
 	return &v1.Result{
 		Status: true,
 	}, nil
@@ -178,16 +163,11 @@ func (v usersServer) Update(c context.Context, u *v1.UpdateUser) (*v1.Result, er
 
 func (v usersServer) Delete(c context.Context, id *v1.ID) (*v1.Result, error) {
 
-	e := collection("user")
-
-	if e != nil {
-		return nil, e
-	}
-
 	err := pool.Delete(id.GetId())
 	if err != nil {
 		return &v1.Result{Status: false}, nil
 	}
 
 	return &v1.Result{Status: true}, nil
+
 }
