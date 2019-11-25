@@ -21,11 +21,9 @@ func main() {
 		user.Config,
 	}
 
-	var ports = 9092
 	//run services on seperate threads
 	for _, v := range services {
 		go v()
-		ports++
 	}
 
 	//register router
