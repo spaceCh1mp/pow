@@ -9,6 +9,7 @@ import (
 	v1 "github.com/spaceCh1mp/pow/server/api/proto/v1"
 	db "github.com/spaceCh1mp/pow/server/db"
 	grpc "google.golang.org/grpc"
+
 	"gopkg.in/mgo.v2/bson"
 )
 
@@ -18,6 +19,11 @@ var (
 	errMsg = fmt.Errorf("Not Implemented this method yet")
 	pool   db.MongoDB
 )
+
+/*
+	TODO
+		Ensure groupServer implements the group grpc stub.
+*/
 
 //Config initialises the Transactions service
 func Config() {
@@ -50,7 +56,7 @@ func (g groupServer) Read(c context.Context, id *v1.ID) (*v1.Group, error) {
 		return nil, err
 	}
 
-	resp, err := pool.Read(id.GetId())
+	resp, err := pool.Read([]byte(id.GetId()))
 	if err != nil {
 		return nil, err
 	}
@@ -67,11 +73,6 @@ func (g groupServer) Read(c context.Context, id *v1.ID) (*v1.Group, error) {
 	}
 
 	return &gr, nil
-}
-
-//ReadGroupMembers should be called inside Read tbh
-func (g groupServer) ReadGroupMembers(c context.Context, id *v1.ID) (*v1.Members, error) {
-	return &v1.Members{}, nil
 }
 
 //ReadGroupOrganiser fetches the head of the group

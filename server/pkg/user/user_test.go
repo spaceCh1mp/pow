@@ -67,28 +67,16 @@ func TestCreate(t *testing.T) {
 		},
 			errUN},
 		{"No value", &v1.User{}, errED},
-		{"Failed to Set Collection", &v1.User{
-			FirstName: "Kenechukwu",
-			LastName:  "Agugua",
-			UserName:  "space",
-			Email:     "Keneca@gmail.com",
-			Password:  "123455788",
-		},
-			errFC,
-		},
 	}
 
 	for _, v := range tt {
 		t.Run(v.name, func(t *testing.T) {
-			//set different connection data to test
-			if v.name == "Failed to Set Collection" {
-				pool = db.MockSession{C: false}
-			}
 
 			_, e := usersServerTest.Create(context.Background(), v.tc)
 			if v.err != e {
 				t.Fatalf("Expected: %v \n Got: %v", v.err, e)
 			}
+
 		})
 	}
 }
@@ -111,18 +99,11 @@ func TestRead(t *testing.T) {
 		}, {
 			"Invalid ObjectId", &v1.ID{Id: "g17t3jfnkkjrik"},
 			db.ErrInvalidHex,
-		}, {
-			"Failed to Set Collection", &v1.ID{Id: primitive.NewObjectID().Hex()},
-			errFC,
 		},
 	}
 
 	for _, v := range tt {
 		t.Run(v.name, func(t *testing.T) {
-			//set different connection data to test
-			if v.name == "Failed to Set Collection" {
-				pool = db.MockSession{C: false}
-			}
 
 			_, e := usersServerTest.Read(context.Background(), v.in)
 			if e != v.out {
@@ -134,7 +115,7 @@ func TestRead(t *testing.T) {
 }
 
 func TestDelete(t *testing.T) {
-	pool = &db.MockSession{C: true}
+	pool = db.MockSession{C: true}
 
 	tt := []struct {
 		name string
@@ -148,25 +129,18 @@ func TestDelete(t *testing.T) {
 		}, {
 			"Failed to delete data", &v1.ID{Id: "4af9f070a466"},
 			&v1.Result{Status: false}, nil,
-		}, {
-			"Failed to Set Collection", &v1.ID{Id: "howdy"},
-			nil, errFC,
 		},
 	}
 
 	for _, v := range tt {
 		t.Run(v.name, func(t *testing.T) {
 
-			//set different connection data to test
-			if v.name == "Failed to Set Collection" {
-				pool = db.MockSession{C: false}
-			}
-
 			resp, err := usersServerTest.Delete(context.Background(), v.in)
 			if err != v.out || resp.GetStatus() != v.res.GetStatus() {
 				t.Fatalf("Expected{\nresult:%v\nerr:%v\n}\n Got{\nresult:%v\nerr:%v\n}",
 					v.res.GetStatus(), v.out, resp.GetStatus(), err)
 			}
+
 		})
 	}
 }

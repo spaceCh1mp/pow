@@ -138,13 +138,15 @@ type MockSession struct {
 	C bool
 }
 
-//Connect Does nothing
+//Connect pings an empty client and returns an error if mockSession is set to false else
+//it just returns nil.
 func (ms MockSession) Connect() error {
 
 	if !ms.C {
 		var c = mongo.Client{}
 		return c.Ping(context.TODO(), nil)
 	}
+
 	return nil
 }
 

@@ -3,7 +3,6 @@ package user
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 	"log"
 	"net"
 
@@ -18,8 +17,7 @@ type usersServer struct {
 }
 
 var (
-	errMsg = fmt.Errorf("Not Implemented this method yet")
-	pool   db.MongoDB
+	pool db.MongoDB
 )
 
 func isEmpty(v interface{}) bool {
@@ -41,18 +39,14 @@ func isEmpty(v interface{}) bool {
 func collection(str string) error {
 	err := pool.SetCollection(str)
 	if err != nil {
-		//try to re-establish a connection
-		//if it fails return the error
-		err = pool.Connect()
-		if err != nil {
-			return errFC
-		}
+		return errFC
 	}
+
 	return nil
 }
 
 //Config initialises the service
-func Config() {
+func Config() error {
 	s := grpc.NewServer()
 	var user usersServer
 
@@ -63,13 +57,17 @@ func Config() {
 	}
 
 	pool = &db.LiveSession{}
+
 	//set collection to query
 	if err = collection("user"); err != nil {
-		return
+		return err
 	}
+
 	defer pool.Disconnect()
 
 	log.Printf("User: %v \n", s.Serve(l))
+
+	return nil
 }
 
 //Implement gRPC crud methods.

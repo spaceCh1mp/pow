@@ -2,7 +2,6 @@ package db
 
 import (
 	"encoding/json"
-	"log"
 
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -50,7 +49,7 @@ func (ms MockSession) Read(b []byte) (interface{}, error) {
 	var filter map[string]string
 
 	_ = json.Unmarshal(b, &filter)
-	log.Println("stuff1")
+
 	//dummy reply for when the Find operation fails
 	//possible cause would be a wrong ObjectId
 	_, err := primitive.ObjectIDFromHex(filter["id"])
@@ -60,19 +59,14 @@ func (ms MockSession) Read(b []byte) (interface{}, error) {
 
 	}
 
-	log.Println("stuff2")
-
 	//dummy reply for when no document is returned
 	if filter["id"] == "4af9f070a466655aeb230cbd" {
 		return nil, ErrNoMatchedDocument
 	}
 
-	log.Println("stuff3")
-
 	err = json.Unmarshal(b, &v)
 
 	if err != nil {
-		log.Println(err)
 		return nil, err
 	}
 
