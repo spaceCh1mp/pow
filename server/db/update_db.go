@@ -4,6 +4,8 @@ import (
 	"encoding/json"
 	"log"
 
+	"go.mongodb.org/mongo-driver/mongo"
+
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	context "golang.org/x/net/context"
@@ -30,6 +32,18 @@ func parseUpdate(b []byte) (*primitive.ObjectID, bson.D, error) {
 //ErrNoMatchedDocument if no document matched the filter
 func (ls *LiveSession) Update(b []byte) error {
 
+	return runUpdate(ls.Collection, b, "$set")
+
+}
+
+//UpdateArray ...
+func (ls *LiveSession) UpdateArray(b []byte, option string) error {
+
+	return runUpdate(ls.Collection, b, option)
+}
+
+func runUpdate(c *mongo.Collection, b []byte, updateOperator string) error {
+
 	//Parse JSON encoded values and return values for Id and params
 	id, params, err := parseUpdate(b)
 	if err != nil {
@@ -45,11 +59,11 @@ func (ls *LiveSession) Update(b []byte) error {
 
 	//build update
 	update := bson.D{
-		{Key: "$set", Value: params},
+		{Key: updateOperator, Value: params},
 	}
 
 	//Run updateOne operation and pass necessary parameters
-	res, err := ls.Collection.UpdateOne(context.Background(), filter, update) //problem
+	res, err := c.UpdateOne(context.Background(), filter, update) //problem
 	if err != nil {
 		return err
 	}

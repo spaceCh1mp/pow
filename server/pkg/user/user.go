@@ -31,6 +31,7 @@ func isEmpty(v interface{}) bool {
 		if i == nil {
 			return true
 		}
+
 		break
 	}
 	return false
