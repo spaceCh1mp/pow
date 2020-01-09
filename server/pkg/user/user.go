@@ -6,8 +6,6 @@ import (
 	"log"
 	"net"
 
-	"go.mongodb.org/mongo-driver/bson"
-
 	v1 "github.com/spaceCh1mp/pow/server/api/proto/v1"
 	db "github.com/spaceCh1mp/pow/server/db"
 	grpc "google.golang.org/grpc"
@@ -117,29 +115,25 @@ func (v usersServer) Read(c context.Context, id *v1.ID) (*v1.ReadUser, error) {
 		return nil, err
 	}
 
-	r, err := pool.Read(b)
+	r, err := pool.Read(b, &v1.ReadUser{})
 	if err != nil {
 		//if there's no response
 		//if there's an err from the operation
 		return nil, err
 	}
 
-	b, err = bson.Marshal(r)
-	if err != nil {
-		return nil, err
-	}
+	// b, err = bson.Marshal(r)
+	// if err != nil {
+	// 	return nil, err
+	// }
 
-	var z v1.User
-	err = bson.Unmarshal(b, &z)
-	if err != nil {
-		return nil, err
-	}
+	// var z v1.User
+	// err = bson.Unmarshal(b, &z)
+	// if err != nil {
+	// 	return nil, err
+	// }
 
-	return &v1.ReadUser{
-		FirstName: z.GetFirstName(),
-		Email:     z.GetEmail(),
-		UserName:  z.GetUserName(),
-	}, nil
+	return r.(*v1.ReadUser), nil
 }
 
 func (v usersServer) Update(c context.Context, u *v1.UpdateUser) (*v1.Result, error) {

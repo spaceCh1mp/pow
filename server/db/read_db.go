@@ -9,8 +9,6 @@ import (
 	context "golang.org/x/net/context"
 )
 
-var v interface{}
-
 func parseRead(b []byte) (bson.D, error) {
 
 	_, bm, err := parse(b, "r")
@@ -21,7 +19,7 @@ func parseRead(b []byte) (bson.D, error) {
 //Read gets the record from a collection, where filter is the string representation of
 //the document ObjectID.
 //Read returns an error if the ID is not valid, ErrNoMatchedDocument is returned if there are no results
-func (ls *LiveSession) Read(b []byte) (interface{}, error) {
+func (ls *LiveSession) Read(b []byte, v interface{}) (interface{}, error) {
 
 	filter, err := parseRead(b)
 	if err != nil {
@@ -30,12 +28,10 @@ func (ls *LiveSession) Read(b []byte) (interface{}, error) {
 
 	resp := ls.Collection.FindOne(context.Background(), filter)
 
-	if err := resp.Decode(&v); err != nil {
-
+	if err := resp.Decode(v); err != nil {
 		if err == mongo.ErrNoDocuments {
 			return nil, ErrNoMatchedDocument
 		}
-
 		return nil, err
 	}
 
@@ -44,7 +40,7 @@ func (ls *LiveSession) Read(b []byte) (interface{}, error) {
 }
 
 //Read (mock) dummies the read operation. Used for testing
-func (ms MockSession) Read(b []byte) (interface{}, error) {
+func (ms MockSession) Read(b []byte, v interface{}) (interface{}, error) {
 
 	var filter map[string]string
 
