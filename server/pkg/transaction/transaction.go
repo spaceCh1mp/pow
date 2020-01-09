@@ -1,37 +1,57 @@
-package main
+package transaction
 
 import (
 	"context"
-	"fmt"
 	"log"
 	"net"
 
 	v1 "github.com/spaceCh1mp/pow/server/api/proto/v1"
+	"github.com/spaceCh1mp/pow/server/db"
 	grpc "google.golang.org/grpc"
 )
 
 type transactionsServer struct{}
 
-func main() {
-	log.Fatalln(config())
-}
-//Config initialises the Transactions service
-func config() error {
-	s := grpc.NewServer()
-	var transaction transactionsServer
-	v1.RegisterTransactionsServer(s, transaction)
+var pool db.MongoDB
 
-	l, err := net.Listen("tcp", ":8083")
+func collection(str string) error {
+	err := pool.SetCollection(str)
 	if err != nil {
-		log.Fatalf("Couldn't listen on port \n %v", err)
+		//implement error on failed connection
+		return err
 	}
 
-	return fmt.Errorf("%v", s.Serve(l))
+	return nil
 }
 
-func (t transactionsServer) Create(c context.Context, nt *v1.NewTransaction) (*v1.Result, error) {
-	return &v1.Result{}, nil
+//Config initialises the service
+func Config() error {
+	s := grpc.NewServer()
+	var transactions transactionsServer
+
+	v1.RegisterTransactionsServer(s, transactions)
+	l, err := net.Listen("tcp", ":9093")
+	if err != nil {
+		log.Fatalf("Couldn't listen on port. %v", err)
+	}
+
+	pool = &db.LiveSession{}
+
+	//set collection to query
+	if err = collection("Transactions"); err != nil {
+		return err
+	}
+
+	defer pool.Disconnect()
+
+	log.Printf("Transactions: %v \n", s.Serve(l))
+
+	return nil
 }
-func (t transactionsServer) ReadTransaction(c context.Context, td *v1.TID) (*v1.Transaction, error) {
+
+func (t transactionsServer) Create(c context.Context, nt *v1.NewTransaction) (*v1.Transaction, error) {
+	return &v1.Transaction{}, nil
+}
+func (t transactionsServer) ReadTransaction(c context.Context, td *v1.ID) (*v1.Transaction, error) {
 	return &v1.Transaction{}, nil
 }
