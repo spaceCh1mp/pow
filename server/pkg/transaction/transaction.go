@@ -15,6 +15,7 @@ type transactionsServer struct{}
 func main() {
 	log.Fatalln(config())
 }
+
 //Config initialises the Transactions service
 func config() error {
 	s := grpc.NewServer()
@@ -32,6 +33,6 @@ func config() error {
 func (t transactionsServer) Create(c context.Context, nt *v1.NewTransaction) (*v1.Result, error) {
 	return &v1.Result{}, nil
 }
-func (t transactionsServer) ReadTransaction(c context.Context, td *v1.TID) (*v1.Transaction, error) {
+func (t transactionsServer) ReadTransaction(c context.Context, td *v1.ID) (*v1.Transaction, error) {
 	return &v1.Transaction{}, nil
 }
