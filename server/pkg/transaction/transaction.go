@@ -28,7 +28,8 @@ func collection(str string) error {
 
 //Config initialises the service
 func Config() error {
-	s := grpc.NewServer()
+
+  s := grpc.NewServer()
 	var transactions transactionsServer
 
 	v1.RegisterTransactionsServer(s, transactions)
@@ -84,4 +85,5 @@ func (t transactionsServer) ReadTransaction(c context.Context, td *v1.ID) (*v1.T
 	}
 
 	return &transactionData, nil
+
 }

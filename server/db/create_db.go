@@ -1,6 +1,8 @@
 package db
 
 import (
+	"log"
+
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	context "golang.org/x/net/context"
 )
@@ -12,6 +14,7 @@ func (ls *LiveSession) Insert(document interface{}) (string, error) {
 	//ToDo ensure data is in line with model to be inserted
 	resp, err := ls.Collection.InsertOne(context.TODO(), document)
 	if err != nil {
+		log.Println(err)
 		return "", err
 	}
 

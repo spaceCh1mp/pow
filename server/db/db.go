@@ -72,8 +72,9 @@ type MongoDB interface {
 	SetCollection(string) error
 
 	Insert(interface{}) (string, error)
-	Read([]byte) (interface{}, error)
+	Read([]byte, interface{}) (interface{}, error)
 	Update([]byte) error
+	UpdateArray([]byte, string) error
 	Delete(string) error
 }
 

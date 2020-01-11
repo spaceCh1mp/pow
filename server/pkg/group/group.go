@@ -6,14 +6,15 @@ import (
 	"fmt"
 	"log"
 	"net"
+	"time"
+
+	"go.mongodb.org/mongo-driver/bson/primitive"
 
 	"github.com/spaceCh1mp/pow/server/utils"
 
 	v1 "github.com/spaceCh1mp/pow/server/api/proto/v1"
 	db "github.com/spaceCh1mp/pow/server/db"
 	grpc "google.golang.org/grpc"
-
-	"gopkg.in/mgo.v2/bson"
 )
 
 type groupServer struct{}
@@ -31,8 +32,8 @@ var (
 //Config initialises the Group service
 func Config() error {
 
-	s, pool := grpc.NewServer(), &db.LiveSession{}
-
+	s := grpc.NewServer()
+	pool = &db.LiveSession{}
 	var group groupServer
 	v1.RegisterGroupsServer(s, group)
 
@@ -43,7 +44,7 @@ func Config() error {
 
 	//set collection to query
 	defer pool.Disconnect()
-	if err := pool.SetCollection("group"); err != nil {
+	if err := pool.SetCollection("family"); err != nil {
 		return utils.ErrFC
 	}
 
@@ -55,29 +56,45 @@ func Config() error {
 //Create adds a new group to the database
 func (g groupServer) Create(c context.Context, ng *v1.NewGroup) (*v1.ID, error) {
 
-	return &v1.ID{}, nil
+	//make query
+	for {
+		objectID := primitive.NewObjectIDFromTimestamp(time.Now().UTC())
+		resp, err := pool.Insert(&db.Family{
+			ID:          &objectID,
+			Name:        ng.Name,
+			Rate:        float64(ng.Rate),
+			OrganiserID: "5d911f1f568f8287f5f8155e",
+		})
+
+		if err != nil {
+			return nil, err
+		}
+
+		if _, err = primitive.ObjectIDFromHex(resp); err == nil {
+			return &v1.ID{
+				Id: resp,
+			}, nil
+		}
+	}
+
 }
 
 //Read gets the group information
 func (g groupServer) Read(c context.Context, id *v1.ID) (*v1.Group, error) {
 
-	resp, err := pool.Read([]byte(id.GetId()))
+	b, err := json.Marshal(id)
 	if err != nil {
 		return nil, err
 	}
 
-	b, err := bson.Marshal(resp)
+	//TODO
+	// use db.Family
+	resp, err := pool.Read(b, &v1.Group{})
 	if err != nil {
 		return nil, err
 	}
 
-	var gr v1.Group
-	err = bson.Unmarshal(b, &gr)
-	if err != nil {
-		return nil, err
-	}
-
-	return &gr, nil
+	return resp.(*v1.Group), nil
 }
 
 //ReadGroupOrganiser fetches the head of the group
@@ -87,7 +104,7 @@ func (g groupServer) ReadGroupOrganiser(c context.Context, id *v1.ID) (*v1.ReadU
 		return nil, err
 	}
 
-	tempGrpc, err := grpc.Dial(":8000", grpc.WithInsecure())
+	tempGrpc, err := grpc.Dial(":9092", grpc.WithInsecure())
 	if err != nil {
 		return nil, utils.ErrInternalServerError
 	}
@@ -119,7 +136,7 @@ func (g groupServer) Update(c context.Context, ug *v1.UpdateGroup) (*v1.Result, 
 //UpdateMember makes no sense now that i think about it
 func (g groupServer) UpdateMember(c context.Context, gm *v1.GroupMember) (*v1.Result, error) {
 
-	return member("$Push")
+	return member(gm, "$Push")
 
 }
 
@@ -134,18 +151,11 @@ func (g groupServer) Delete(c context.Context, id *v1.ID) (*v1.Result, error) {
 	return &v1.Result{Status: true}, nil
 }
 
-//DeleteMember gets rid of a user in the group
-func (g groupServer) DeleteMember(c context.Context, mg *v1.GroupMember) (*v1.Result, error) {
+func member(gm *v1.GroupMember, op string) (*v1.Result, error) {
 
-	return member("$Pull")
+	res := &v1.Result{Id: gm.GetId(), Status: false}
 
-}
-
-func member(op string) (*v1.Result, error) {
-
-	res := &v1.Result{Id: ug.GetId(), Status: false}
-
-	jsonByte, err := json.Marshal(ug)
+	jsonByte, err := json.Marshal(gm)
 	if err != nil {
 		return res, err
 	}
