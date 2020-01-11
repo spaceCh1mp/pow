@@ -3,6 +3,7 @@ package main
 import (
 	"github.com/gin-gonic/gin"
 	"github.com/spaceCh1mp/pow/server/pkg/group"
+	"github.com/spaceCh1mp/pow/server/pkg/transaction"
 	"github.com/spaceCh1mp/pow/server/pkg/user"
 	"github.com/spaceCh1mp/pow/server/routes"
 )
@@ -21,6 +22,7 @@ func main() {
 	services := []func() error{
 		user.Config,
 		group.Config,
+		transaction.Config,
 	}
 
 	//run services on seperate threads

@@ -2,10 +2,9 @@ package transaction
 
 import (
 	"context"
+	"encoding/json"
 	"log"
 	"net"
-
-	"go.mongodb.org/mongo-driver/bson"
 
 	v1 "github.com/spaceCh1mp/pow/server/api/proto/v1"
 	"github.com/spaceCh1mp/pow/server/db"
@@ -29,7 +28,7 @@ func collection(str string) error {
 //Config initialises the service
 func Config() error {
 
-  s := grpc.NewServer()
+	s := grpc.NewServer()
 	var transactions transactionsServer
 
 	v1.RegisterTransactionsServer(s, transactions)
@@ -68,22 +67,16 @@ func (t transactionsServer) Create(c context.Context, nt *v1.NewTransaction) (*v
 
 func (t transactionsServer) ReadTransaction(c context.Context, td *v1.ID) (*v1.Transaction, error) {
 
-	resp, err := pool.Read([]byte(td.GetId()))
+	b, err := json.Marshal(td)
 	if err != nil {
 		return nil, err
 	}
 
-	b, err := bson.Marshal(resp)
+	resp, err := pool.Read(b, &v1.Transaction{})
 	if err != nil {
 		return nil, err
 	}
 
-	var transactionData v1.Transaction
-	err = bson.Unmarshal(b, &transactionData)
-	if err != nil {
-		return nil, err
-	}
-
-	return &transactionData, nil
+	return resp.(*v1.Transaction), nil
 
 }
